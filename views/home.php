@@ -7,7 +7,7 @@ require_once __DIR__ . '/../header.php';
     <div id="carouselExample" class="carousel slide" data-bs-ride="carousel">
         <div class="carousel-inner">
             <?php
-            $carouselDir = __DIR__ . '/../images/carousel';
+            $carouselDir = __DIR__ . 'images/carousel';
             if (is_dir($carouselDir)) {
                 $images = array_diff(scandir($carouselDir), array('.', '..', '.gitkeep'));
                 $first = true;

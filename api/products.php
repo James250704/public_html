@@ -17,7 +17,7 @@ $type = $_GET['type'] ?? '';
 // 根據類型查詢商品
 $query = "SELECT p.ProductID as id, p.ProductName as name, p.Introdution as description, 
           MIN(o.Price) as min_price, MAX(o.Price) as max_price,
-          CONCAT('images/products/', p.ProductID, '/main.jpg') as image
+          CONCAT('images/Products/', p.ProductID, '/main.jpg') as image
           FROM Product p
           JOIN Options o ON p.ProductID = o.ProductID
           WHERE p.Type = :type

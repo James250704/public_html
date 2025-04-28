@@ -35,7 +35,7 @@ try {
     <div class="container">
         <div class="row">
             <div class="col-lg-6">
-                <img id="product-main-image" src="images/products/<?php echo $productId; ?>/main.jpg" class="img-fluid"
+                <img id="product-main-image" src="images/Products/<?php echo $productId; ?>/main.jpg" class="img-fluid"
                     style="border-radius: 20px;" alt="商品主圖">
             </div>
             <div class="col-lg-6 col-12">
