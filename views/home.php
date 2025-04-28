@@ -52,6 +52,7 @@ require_once __DIR__ . '/../header.php';
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
+    console.log('<?php echo BASE_URL; ?>');
     $(document).ready(function () {
         // 加載精選商品
         $.ajax({
