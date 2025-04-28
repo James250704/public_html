@@ -6,7 +6,7 @@ if (!isset($_SESSION['logged_in'])) {
 }
 ?>
 <?php require_once __DIR__ . '/../header.php' ?>
-<div class="container my-5">
+<div class="container">
     <h2 class="mb-4">我的購物車</h2>
 
     <div class="d-none d-md-block">

@@ -3,7 +3,7 @@ class HomeController
 {
     public function index()
     {
-        // Load home view
+        $pageTitle = '歐印精品-首頁';
         require_once 'views/home.php';
     }
 }

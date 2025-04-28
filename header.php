@@ -11,7 +11,7 @@
     <!-- 自訂CSS -->
     <link rel="stylesheet" href="css/style.css">
     <link rel="icon" href="images/webimg.ico" type="image/x-icon">
-    <title>歐印精品</title>
+    <title><?php echo isset($pageTitle) ? $pageTitle : '歐印精品'; ?></title>
 </head>
 
 <body class="d-flex flex-column min-vh-100">

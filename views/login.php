@@ -7,7 +7,7 @@ if (isset($_SESSION['logged_in'])) {
 ?>
 
 <?php require_once __DIR__ . '/../header.php' ?>
-<div class="container my-5">
+<div class="container">
     <div class="row justify-content-center">
         <div class="col-md-6">
             <div class="card">

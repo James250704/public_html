@@ -1,5 +1,5 @@
 <?php require_once __DIR__ . '/../header.php' ?>
-<div class="container my-5">
+<div class="container">
     <div class="row">
         <div class="col-12">
             <h1 class="text-center mb-4">关于我们</h1>

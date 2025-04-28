@@ -1,5 +1,5 @@
 <?php require_once __DIR__ . '/../header.php' ?>
-<div class="container my-5">
+<div class="container">
     <h2 class="mb-4">結帳</h2>
 
     <div class="row">
