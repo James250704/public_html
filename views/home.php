@@ -102,14 +102,14 @@ require_once __DIR__ . '/../header.php';
                                 <img src="${product.image}" class="card-img-top" style="border-radius: 20px 20px 0 0; object-fit: cover; height: auto; width: 100%;" alt="${product.name}">
                                 <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.3); border-radius: 20px 20px 0 0; opacity: 0; transition: opacity 0.3s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0'"></div>
                             </div>
-                            <div class="card-body pb-0">
+                            <div class="card-body pb-0 mb-2">
                                 <h5 class="card-title">${product.name}</h5>
                                 <p class="card-text">${product.description}</p>
                                 <p class="mb-0"> 價格： <span class="text-decoration-line-through text-muted">$${(product.max_price * 1.2).toFixed(0)}</span></p>
                                 <p class="text-danger fs-4 mt-0 strong">$${product.min_price}</p>
                             </div>
-                            <div style="position: absolute; top: 100%; left: 50%; transform: translate(-50%, -50%); z-index: 2;">
-                                <span class="btn-lg btn-success" style="border-radius: 20px;">查看詳情</span>
+                            <div style="position: absolute; top: 100%; left: 50%; transform: translate(-50%, -50%); z-index: 2; width: 80%;">
+                                <span class="btn btn-success" style="border-radius: 20px; width: 100%; display: block;">查看詳情</span>
                             </div>
                         </div>
                     </a>

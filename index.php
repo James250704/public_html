@@ -36,13 +36,18 @@ if (array_key_exists($action, $routes)) {
     } else {
         // 控制器文件不存在
         header('HTTP/1.0 404 Not Found');
+        require_once __DIR__ . '/views/404.php';
         echo 'Page not found';
         exit;
     }
 } else {
     // 路由不存在
-    header('HTTP/1.0 404 Not Found');
-    echo 'Page not found';
+    if ($action === '404') {
+        require_once __DIR__ . '/views/404.php';
+    } else {
+        header('HTTP/1.0 404 Not Found');
+        require_once __DIR__ . '/views/404.php';
+    }
     exit;
 }
 ?>

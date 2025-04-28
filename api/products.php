@@ -29,5 +29,12 @@ $stmt->execute();
 
 $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+if (empty($products)) {
+    header('HTTP/1.0 404 Not Found');
+    header('Content-Type: application/json');
+    echo json_encode(['error' => 'No products found for this type']);
+    exit;
+}
+
 echo json_encode($products);
 ?>

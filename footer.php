@@ -1,4 +1,4 @@
-<footer class="text-dark bg-success bg-opacity-10">
+<footer class="mt-auto text-dark bg-success bg-opacity-10">
     <div class="container py-4">
         <div class="row justify-content-center mb-3">
             <div class="col-auto d-flex align-items-center">
