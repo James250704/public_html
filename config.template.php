@@ -8,5 +8,5 @@ define('DB_USER', 'username');
 define('DB_PASS', 'password');
 // 自動檢測協議和主機名
 $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? "https" : "http";
-define('BASE_URL', $protocol . '://' . $_SERVER['HTTP_HOST'] . '/new_test');
+define('BASE_URL', $protocol . '://' . $_SERVER['HTTP_HOST'] . dirname($_SERVER['SCRIPT_NAME']));
 ?>
