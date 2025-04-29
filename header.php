@@ -9,7 +9,7 @@
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.0/font/bootstrap-icons.css">
     <!-- 自訂CSS -->
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="nav-pills.css">
     <link rel="icon" href="images/webimg.ico" type="image/x-icon">
     <title><?php echo isset($pageTitle) ? $pageTitle : '歐印精品'; ?></title>
 </head>

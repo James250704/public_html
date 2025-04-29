@@ -61,7 +61,7 @@ if (is_dir($imageDir)) {
     foreach ($images as $image) {
         if ($image !== 'main.jpg' && strpos($image, 'gallery-') === 0) {
             $response['galleryImages'][] = [
-                'url' => BASE_URL . '/images/products/' . $productId . '/' . $image
+                'url' => str_replace($_SERVER['DOCUMENT_ROOT'], '', $imageDir) . '/' . $image
             ];
         }
     }

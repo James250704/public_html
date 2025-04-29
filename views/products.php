@@ -1,7 +1,7 @@
 <?php
 $productId = $_GET['id'];
 // 使用API檢查商品是否存在
-$checkResponse = file_get_contents(BASE_URL . "/api/product_check.php?id=" . $productId);
+$checkResponse = file_get_contents('http://' . $_SERVER['HTTP_HOST'] . '/new_test/api/product_check.php?id=' . $productId);
 $checkData = json_decode($checkResponse, true);
 
 if (!isset($_GET['id']) || !$checkData['exists']) {
