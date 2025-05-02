@@ -24,7 +24,7 @@ function getNavItems()
 function renderNavItems($navItems, $class = '')
 {
     foreach ($navItems as $item) {
-        echo '<li class="nav-item">';
+        echo '<li class="nav-item mb-2">';
         echo '<a href="' . $item['url'] . '" class="nav-link text-black ' . $class . '" style="font-size: large;">';
         echo $item['text'];
         echo '</a></li>';

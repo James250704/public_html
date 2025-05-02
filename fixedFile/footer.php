@@ -48,6 +48,32 @@
         </div>
     </div>
 </footer>
+<button id="backToTop" type="button"
+    class="btn btn-success bg-opacity-10 rounded-circle position-fixed bottom-0 end-0 m-3 d-none"
+    style="width:3rem; height:3rem; z-index:1050;" aria-label="Back to Top">
+    ↑
+</button>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const btn = document.getElementById('backToTop');
+        if (!btn) {
+            console.error('找不到 #backToTop 按鈕');
+            return;
+        }
+
+        // 滾動時顯示／隱藏：超過 100px 出現
+        window.addEventListener('scroll', () => {
+            const scrolled = document.documentElement.scrollTop || document.body.scrollTop;
+            btn.classList.toggle('d-none', scrolled < 100);
+        });
+
+        // 點擊時平滑回頂（不改變網址、也不進歷史紀錄）
+        btn.addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    });
+</script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 

@@ -198,7 +198,7 @@ include __DIR__ . "/fixedFile/header.php";
                     document.body.appendChild(alertDiv);
                     setTimeout(() => {
                         window.location.href = 'myOrder.php';
-                    }, 2000);
+                    }, 500);
                 } else {
                     const alertDiv = document.createElement('div');
                     alertDiv.className = 'alert alert-danger alert-dismissible fade show position-fixed top-50 start-50 translate-middle-x mt-3';

@@ -46,7 +46,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <?php include __DIR__ . "/fixedFile/header.php"; ?>
 
-<div class="container text-center border-bottom border-black my-3  flex-grow-1 pt-5">
+<div class="container text-center border-bottom border-black">
     <img src="imgs/title.png" alt="歐印精品" class="img-fluid">
     <h1 class="h1">會員登入</h1>
 </div>

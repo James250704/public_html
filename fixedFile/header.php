@@ -43,13 +43,6 @@
         .nav-pills .nav-link img {
             vertical-align: middle;
         }
-
-        html,
-        body {
-            overflow-x: hidden;
-            overflow-y: scroll;
-            /* 防止橫向滾動條 */
-        }
     </style>
     <?php outputProductTitleScript(); ?>
 </head>
@@ -106,5 +99,4 @@
             </div>
         </div>
     </div>
-
     <div class="container-fulid pt-5 mt-3 flex-grow-1">

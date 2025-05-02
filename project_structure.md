@@ -22,7 +22,7 @@
 │── repair.php
 │── about.php
 │── productDetail.php
-│── shoppingCart.php
+│── cart.php
 │── checkout.php
 │── myOrder.php
 │── login.php

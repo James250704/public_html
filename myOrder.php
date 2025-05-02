@@ -212,7 +212,7 @@ echo '</script>';
                     body: JSON.stringify({ memberId: CONFIG.memberId, orderId })
                 });
                 const data = await res.json();
-                if (data.success) location.href = 'shoppingCart.php';
+                if (data.success) location.href = 'cart.php';
                 else showMsg(`再買一次失敗：${data.message}`);
             } catch (e) {
                 console.error(e); showMsg('發生錯誤，請稍後再試');
