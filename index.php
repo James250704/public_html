@@ -38,7 +38,7 @@ $featureds = getProductsByType('featured');
     </div>
 </div>
 
-<div class="row mt-5">
+<div class="row">
     <div class="container-fluid mt-3 px-3 mx-auto">
         <div class="row col-lg-9 col-12 mx-auto">
             <ul class="nav nav-pills mb-4 justify-content-center gap-4 fs-6" id="product-tabs">

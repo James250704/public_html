@@ -1,6 +1,11 @@
 <?php
 require_once __DIR__ . '/db.php';
 
+// 只在直接訪問時設置 JSON 頭，而不是在被引入時
+if (basename($_SERVER['PHP_SELF']) === basename(__FILE__)) {
+    header('Content-Type: application/json');
+}
+
 function getProducts()
 {
     try {
@@ -239,7 +244,6 @@ function renderProductCard(array $product)
 
 // API 端點處理
 if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action'])) {
-    header('Content-Type: application/json');
 
     try {
         switch ($_GET['action']) {

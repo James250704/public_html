@@ -9,7 +9,7 @@
     2. Product(ProductID, Type, ProductName, Introdution, isActive)
     3. Options(OptionID, ProductID, Color, Size, SizeDescription, Price, Stock)
     4. CartItem(MemberID, OptionID, Quantity)
-    5. Orders(OrderID, MembersID, OrderDate, Status)
+    5. Orders(OrderID, MembersID, OrderDate, Status, Note)
     6. OrderItem(OrderID, OptionID, Quantity)
     7. Receipt(ReceiptID, MemberID, OrderID, PaymentMethod, PaymentDate)
     8. ReceiptItem(ReceiptID, OptionID, WarrantyID)
@@ -23,3 +23,15 @@
 15. error使用js的console.log來輸出
 16. 在單獨顯示的畫面要使用 fixedFile中的 header.php與footer.php，並且使用正確的架構
 17. 使用中文回答
+18. 在訂單狀態時使用下面的樣式：
+    'Completed' => 'bg-success',
+    'Pending' => 'bg-info text-dark',
+    'Shipping' => 'bg-primary',
+    'Cancel' => 'bg-warning',
+    'abnormal' => 'bg-danger',
+    default => 'bg-secondary'   
+    'Completed' => '已完成',
+    'Pending' => '處理中',
+    'Shipping' => '運送中',
+    'Cancel' => '已取消',
+    'abnormal' => '異常',

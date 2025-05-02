@@ -14,6 +14,9 @@ $product_id = isset($_GET['product_id']) ? (int) $_GET['product_id'] : 1;
     <!-- 商品資訊將由 AJAX 載入 -->
 </div>
 
+<!-- Alert 顯示位置 -->
+<div id="alertPlaceholder" class="position-fixed top-50 start-50 translate-middle-x mt-3" style="z-index: 1100;"></div>
+
 <?php include "fixedFile/footer.php"; ?>
 
 <!-- 先把 PHP 變數傳給 JS -->
@@ -169,7 +172,6 @@ $product_id = isset($_GET['product_id']) ? (int) $_GET['product_id'] : 1;
             const btn = document.createElement('button');
             btn.className = 'btn btn-outline-success me-1 mb-1 color-option';
             btn.textContent = names[i] || `顏色${i + 1}`;
-            btn.disabled = (c.Stock <= 0);
             btn.dataset.optionId = c.OptionID;
             btn.addEventListener('click', () => {
                 document.querySelectorAll('.color-option').forEach(b => {
@@ -181,13 +183,13 @@ $product_id = isset($_GET['product_id']) ? (int) $_GET['product_id'] : 1;
             });
             container.appendChild(btn);
         });
-        // 自動選第一個可用
-        const first = container.querySelector('button:not([disabled])');
+        // 自動選第一個
+        const first = container.querySelector('button');
         if (first) first.click();
     }
 
     function bindAddToCart() {
-        document.getElementById('add-to-cart').addEventListener('click', () => {
+        document.getElementById('add-to-cart').addEventListener('click', async () => {
             const memberId = <?= isset($_SESSION['user_id']) ? (int) $_SESSION['user_id'] : 0 ?>;
             if (!memberId) {
                 alert('請先登入');
@@ -197,19 +199,43 @@ $product_id = isset($_GET['product_id']) ? (int) $_GET['product_id'] : 1;
             const colorBtn = document.querySelector('.color-option.btn-success');
             const optionId = colorBtn?.dataset.optionId;
             if (!optionId) return alert('請選擇顏色');
-            fetch('php/APIs.php?action=addToCart', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ memberId, optionId, quantity: qty })
-            })
-                .then(r => r.json())
-                .then(res => {
-                    alert(res.success ? '已加入購物車' : '加入失敗：' + res.message);
-                })
-                .catch(e => {
-                    console.error(e);
-                    alert('發生錯誤');
+            try {
+                const response = await fetch('api/cart.php?action=addToCart', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ memberId, optionId, quantity: qty })
                 });
+                const res = await response.json();
+
+                const alertPlaceholder = document.getElementById('alertPlaceholder');
+                if (!alertPlaceholder) {
+                    console.error('Alert placeholder not found');
+                    return;
+                }
+
+                const wrapper = document.createElement('div');
+                wrapper.innerHTML = [
+                    `<div class="alert alert-${res.success ? 'success' : 'danger'} alert-dismissible fade show" role="alert">`,
+                    `   <div>${res.success ? '已加入購物車' : '加入失敗：' + (res.message || '')}</div>`,
+                    '   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>',
+                    '</div>'
+                ].join('');
+
+                alertPlaceholder.append(wrapper);
+
+                // 1.5秒後自動消失
+                setTimeout(() => {
+                    const alert = wrapper.querySelector('.alert');
+                    if (alert) {
+                        bootstrap.Alert.getOrCreateInstance(alert).close();
+                    }
+                }, 1500);
+            } catch (e) {
+                console.error(e);
+                const modal = new bootstrap.Modal(document.getElementById('messageModal'));
+                document.getElementById('modalBody').textContent = '發生錯誤';
+                modal.show();
+            }
         });
     }
 

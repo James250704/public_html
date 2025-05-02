@@ -1,3 +1,4 @@
+<?php require_once __DIR__ . '/../api/header.php'; ?>
 <!DOCTYPE html>
 <html lang="zh-TW">
 
@@ -6,11 +7,54 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="icon" href="imgs/webimg.ico" type="image/x-icon">
-    <title>歐印精品-</title>
+    <title><?= getPageTitle() ?></title>
+    <style>
+        html,
+        body {
+            height: 100%;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container-fulid {
+            flex: 1 0 auto;
+        }
+
+        footer {
+            flex-shrink: 0;
+        }
+
+        .nav-pills .nav-link {
+            color: rgb(25, 135, 84);
+            background-color: white;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        /* 活動（active）狀態 */
+        .nav-pills .nav-link.active {
+            color: #fff;
+            background-color: rgb(25, 135, 84);
+            /* 自訂的 active 背景色 */
+        }
+
+        .nav-pills .nav-link img {
+            vertical-align: middle;
+        }
+
+        html,
+        body {
+            overflow-x: hidden;
+            overflow-y: scroll;
+            /* 防止橫向滾動條 */
+        }
+    </style>
+    <?php outputProductTitleScript(); ?>
 </head>
 
 <body>
-    <?php require_once __DIR__ . '/../api/header.php'; ?>
     <div class="fixed-top bg-white m-0 border-bottom border-2">
         <nav class="container position-relative">
             <!-- 電腦版導航 (xl以上) -->
@@ -63,4 +107,4 @@
         </div>
     </div>
 
-    <div class="container-fulid pt-5 mt-3">
+    <div class="container-fulid pt-5 mt-3 flex-grow-1">
