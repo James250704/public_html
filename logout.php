@@ -25,21 +25,8 @@ session_destroy();
 include __DIR__ . "/fixedFile/header.php";
 ?>
 
-<div class="container text-center my-5">
-    <div class="alert alert-success" role="alert">
-        您已成功登出！
-    </div>
-    <p>正在為您重新導向...</p>
-    <div class="spinner-border text-primary" role="status">
-        <span class="visually-hidden">Loading...</span>
-    </div>
-</div>
-
 <script>
-    // 1.5秒後自動跳轉
-    setTimeout(function () {
-        window.location.href = "index.php";
-    }, 1500);
+    window.location.href = "index.php";
 </script>
 
 <?php

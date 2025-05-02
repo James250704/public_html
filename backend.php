@@ -20,7 +20,7 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true || $_SESSI
             aria-controls="adminSidebar">
             <i class="bi bi-list"></i> 管理選單
         </button>
-    </div>å
+    </div>
 
     <div class="row">
         <!-- Offcanvas 側邊欄：小於 lg 時使用 -->

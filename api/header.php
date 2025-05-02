@@ -24,26 +24,34 @@ function getNavItems()
 function renderNavItems($navItems, $class = '')
 {
     foreach ($navItems as $item) {
-        echo '<li class="nav-item mb-2">';
+        echo '<li class="nav-item">';
         echo '<a href="' . $item['url'] . '" class="nav-link text-black ' . $class . '" style="font-size: large;">';
         echo $item['text'];
         echo '</a></li>';
     }
 }
 
-function renderUserControls($isMobile = false)
+function renderUserControls($isMobile = false, $showCartText = false)
 {
     $btnClass = $isMobile ? 'w-100' : 'me-2';
-    echo '<a href="cart.php" class="btn btn-primary d-flex align-items-center justify-content-center gap-2">';
+    $cartClass = $showCartText ? 'btn btn-primary w-100' : 'text-black px-3';
+    echo '<a href="cart.php" class="' . $cartClass . ' d-flex align-items-center justify-content-center gap-2">';
     echo '<svg xmlns="http://www.w3.org/2000/svg" width="1.3rem" height="1.3rem" fill="currentColor" class="bi bi-cart3" viewBox="0 0 16 16">';
     echo '<path d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .49.598l-1 5a.5.5 0 0 1-.465.401l-9.397.472L4.415 11H13a.5.5 0 0 1 0 1H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5M3.102 4l.84 4.479 9.144-.459L13.89 4zM5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4m7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4m-7 1a1 1 0 1 1 0 2 1 1 0 0 1 0-2m7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/>';
-    echo '</svg> 購物車</a>';
+    echo '</svg>';
+
+    // 只在指定時顯示"購物車"文字
+    if ($showCartText) {
+        echo ' 購物車';
+    }
+
+    echo '</a>';
 
     if (!$isMobile) {
         if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true) {
-            echo '<a href="logout.php" class="btn btn-danger ' . $btnClass . '">登出</a>';
+            echo '<a href="logout.php" class="btn btn-danger w-100' . $btnClass . '">登出</a>';
         } else {
-            echo '<a href="login.php" class="btn btn-primary ' . $btnClass . '">登入</a>';
+            echo '<a href="login.php" class="btn btn-primary w-100' . $btnClass . '">登入</a>';
         }
     }
 }

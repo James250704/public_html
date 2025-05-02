@@ -57,11 +57,11 @@
                 </a>
 
                 <ul class="nav justify-content-center mb-xl-0 gap-4">
-                    <?php renderNavItems(getNavItems(), 'px-2 link-dark'); ?>
+                    <?php renderNavItems(getNavItems(), ''); ?>
                 </ul>
 
                 <div class="text-center gap-2 d-flex flex-row flex-nowrap">
-                    <?php renderUserControls(false); ?>
+                    <?php renderUserControls(false, false); ?>
                 </div>
             </div>
 
@@ -83,7 +83,7 @@
                 </a>
 
                 <div class="text-center gap-2">
-                    <?php renderUserControls(true); ?>
+                    <?php renderUserControls(true, false); ?>
                 </div>
             </div>
         </nav>
@@ -91,10 +91,10 @@
         <div class="collapse bg-white border-top" id="collapseNavHeader">
             <div class="container p-2 m-0">
                 <ul class="navbar-nav nav-pills flex-column mb-auto">
-                    <?php renderNavItems(getNavItems(), 'px-3'); ?>
+                    <?php renderNavItems(getNavItems(), 'mb-2 mx-4'); ?>
                 </ul>
                 <div class="d-grid gap-2 mb-3">
-                    <?php renderUserControls(false); ?>
+                    <?php renderUserControls(false, true); ?>
                 </div>
             </div>
         </div>
