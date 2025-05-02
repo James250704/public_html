@@ -198,7 +198,7 @@ function renderProductCard(array $product)
 
     ob_start();
     ?>
-    <div class="col-lg-3 col-md-4 mb-3 d-flex justify-content-center product-item" data-size="<?= $sizeClass ?>"
+    <div class="col-lg-3 col-md-4 col-6 d-flex justify-content-center product-item mb-3" data-size="<?= $sizeClass ?>"
         data-material="<?= $type ?>" data-sizes="<?= htmlspecialchars(implode(',', $filteredSizes), ENT_QUOTES) ?>">
         <div class="card" style="width:100%; max-width:320px; border-radius:20px; transition:transform .2s;"
             onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">

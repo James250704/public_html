@@ -11,12 +11,11 @@ function getNavItems()
         ['url' => 'instructions.php', 'text' => '購物說明'],
         ['url' => 'repair.php', 'text' => '維修保固'],
         ['url' => 'about.php', 'text' => '關於我們'],
+        ['url' => 'myOrder.php', 'text' => '我的訂單'],
     ];
 
     if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true && $_SESSION['user_role'] === 'admin') {
         $items[] = ['url' => 'backend.php', 'text' => '後台管理'];
-    } else {
-        $items[] = ['url' => 'myOrder.php', 'text' => '我的訂單'];
     }
 
     return $items;

@@ -96,7 +96,7 @@
         </nav>
 
         <div class="collapse bg-white border-top" id="collapseNavHeader">
-            <div class="container py-3">
+            <div class="container p-2 m-0">
                 <ul class="navbar-nav nav-pills flex-column mb-auto">
                     <?php renderNavItems(getNavItems(), 'px-3'); ?>
                 </ul>

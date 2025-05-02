@@ -1,10 +1,14 @@
 <?php
 require_once 'fixedFile/header.php';
-require_once __DIR__ . '/models/BrandModel.php';
+require_once __DIR__ . '/models/frontend/BrandModel.php';
 
 $brandInfo = BrandModel::getBrandInfo();
 ?>
-
+<style>
+    p {
+        text-indent: 1.5rem;
+    }
+</style>
 <div class="container text-center border-bottom border-black">
     <img src="imgs/title.png" alt="歐印精品" img-fluid>
     <h1 class="h1">品牌介紹</h1>

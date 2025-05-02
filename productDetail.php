@@ -58,56 +58,73 @@ $product_id = isset($_GET['product_id']) ? (int) $_GET['product_id'] : 1;
         // build HTML
         const html = `
         <div class="row">
-          <div class="col-lg-6 col-none">
-            <img src="${mainImg}" class="img-fluid" alt="main image">
-          </div>
-          <div class="col-lg-6 col-12">
-            <div class="container my-4">
-              <p class="text-start">${intro}</p>
+            <div class="col-lg-6 col-none">
+                <img src="${mainImg}" class="img-fluid" alt="main image" />
             </div>
-            <div class="container">
-              <!-- 尺寸 -->
-              <div class="mb-4">
-                <p class="fw-bold mb-1">尺寸</p>
-                <div id="sizes" class="d-flex flex-wrap"></div>
-              </div>
-              <!-- 顏色 -->
-              <div class="mb-4">
-                <p class="fw-bold mb-1">顏色</p>
-                <div id="colors" class="d-flex flex-wrap"></div>
-              </div>
-              <!-- 數量 -->
-              <div class="mb-4">
-                <p class="fw-bold mb-1">數量</p>
-                <div class="input-group" style="max-width:150px;">
-                  <button class="btn btn-outline-success" id="decrease-qty">-</button>
-                  <input type="number" class="form-control text-center border-success" id="quantity" value="1" min="1">
-                  <button class="btn btn-outline-success" id="increase-qty">+</button>
+            <div class="col-lg-6 col-12">
+                <div class="container my-4">
+                    <p class="text-start">${intro}</p>
                 </div>
-              </div>
-              <!-- 價格 -->
-              <div class="mb-4">
-                <p class="fw-bold mb-1">價格</p>
-                <div>
-                  <span class="fs-6 text-decoration-line-through" id="original-price">
-                    NT$ ${initOrig.toLocaleString()}
-                  </span>
-                  <div class="h3 text-danger fw-bold" id="product-price">
-                    NT$ ${initPrice.toLocaleString()}
-                  </div>
+                <div class="container">
+                    <!-- 尺寸 -->
+                    <div class="mb-4">
+                        <p class="fw-bold mb-1">尺寸</p>
+                        <div id="sizes" class="d-flex flex-wrap"></div>
+                    </div>
+                    <!-- 顏色 -->
+                    <div class="mb-4">
+                        <p class="fw-bold mb-1">顏色</p>
+                        <div id="colors" class="d-flex flex-wrap"></div>
+                    </div>
+                    <!-- 數量 -->
+                    <div class="mb-4">
+                        <p class="fw-bold mb-1">數量</p>
+                        <div class="input-group" style="max-width: 150px">
+                            <button class="btn btn-outline-success" id="decrease-qty">
+                                -
+                            </button>
+                            <input
+                                type="number"
+                                class="form-control text-center border-success"
+                                id="quantity"
+                                value="1"
+                                min="1"
+                            />
+                            <button class="btn btn-outline-success" id="increase-qty">
+                                +
+                            </button>
+                        </div>
+                    </div>
+                    <!-- 價格 -->
+                    <div class="mb-4">
+                        <p class="fw-bold mb-1">價格</p>
+                        <div>
+                            <span
+                                class="fs-6 text-decoration-line-through"
+                                id="original-price"
+                            >
+                                NT$ ${initOrig.toLocaleString()}
+                            </span>
+                            <div class="h3 text-danger fw-bold" id="product-price">
+                                NT$ ${initPrice.toLocaleString()}
+                            </div>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary mt-3" id="add-to-cart">
+                        加入購物車
+                    </button>
                 </div>
-              </div>
-              <button class="btn btn-primary mt-3" id="add-to-cart">加入購物車</button>
             </div>
-          </div>
-          <!-- 圖庫 -->
-          <div class="row mt-5 col-12 col-lg-9 mx-auto" id="gallery-container">
-            ${p.galleryImages.map(img => `
-              <div class="text-center">
-                <img src="${img.url}" class="img-fluid" alt="gallery image">
-              </div>`).join('')}
-          </div>
-        </div>`;
+            <!-- 圖庫 -->
+            <div class="row mt-5 col-12 col-lg-9 mx-auto" id="gallery-container">
+                ${p.galleryImages.map(img => `
+                <div class="text-center">
+                    <img src="${img.url}" class="img-fluid" alt="gallery image" />
+                </div>
+                `).join('')}
+            </div>
+        </div>
+        `;
         document.getElementById('product-container').innerHTML = html;
 
         bindQtyButtons();

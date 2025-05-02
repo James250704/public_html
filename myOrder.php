@@ -13,10 +13,6 @@ if (empty($_SESSION['logged_in'])) {
     header('Location: login.php');
     exit;
 }
-if ($_SESSION['user_role'] === 'admin') {
-    header('Location: backend.php');
-    exit;
-}
 
 /* ---------- 相依檔 ---------- */
 require_once __DIR__ . '/api/Member.php';

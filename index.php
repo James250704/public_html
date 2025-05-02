@@ -8,110 +8,104 @@ $travels = getProductsByType('travel');
 $featureds = getProductsByType('featured');
 ?>
 
-<div class="row">
-    <div class="col-10 mx-auto">
-        <?php
-        $dir = 'imgs/carousel/';
-        $imgs = glob($dir . '*.{jpg,jpeg,png,gif}', GLOB_BRACE);
-        ?>
-        <div id="homeCarousel" class="carousel slide" data-bs-ride="carousel">
-            <div class="carousel-indicators">
-                <?php foreach ($imgs as $i => $img): ?>
-                    <button type="button" data-bs-target="#homeCarousel" data-bs-slide-to="<?= $i ?>"
-                        class="<?= !$i ? 'active' : '' ?>"></button>
-                <?php endforeach; ?>
-            </div>
-            <div class="carousel-inner">
-                <?php foreach ($imgs as $i => $img): ?>
-                    <div class="carousel-item <?= !$i ? 'active' : '' ?>">
-                        <img src="<?= $img ?>" class="d-block w-100" alt="slide">
-                    </div>
-                <?php endforeach; ?>
-            </div>
-            <button class="carousel-control-prev" data-bs-target="#homeCarousel" data-bs-slide="prev">
-                <span class="carousel-control-prev-icon"></span>
-            </button>
-            <button class="carousel-control-next" data-bs-target="#homeCarousel" data-bs-slide="next">
-                <span class="carousel-control-next-icon"></span>
-            </button>
+<div class="col-12 col-md-10 mx-auto">
+    <?php
+    $dir = 'imgs/carousel/';
+    $imgs = glob($dir . '*.{jpg,jpeg,png,gif}', GLOB_BRACE);
+    ?>
+    <div id="homeCarousel" class="carousel slide" data-bs-ride="carousel">
+        <div class="carousel-indicators">
+            <?php foreach ($imgs as $i => $img): ?>
+                <button type="button" data-bs-target="#homeCarousel" data-bs-slide-to="<?= $i ?>"
+                    class="<?= !$i ? 'active' : '' ?>"></button>
+            <?php endforeach; ?>
         </div>
+        <div class="carousel-inner">
+            <?php foreach ($imgs as $i => $img): ?>
+                <div class="carousel-item <?= !$i ? 'active' : '' ?>">
+                    <img src="<?= $img ?>" class="d-block w-100" alt="slide">
+                </div>
+            <?php endforeach; ?>
+        </div>
+        <button class="carousel-control-prev" data-bs-target="#homeCarousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon"></span>
+        </button>
+        <button class="carousel-control-next" data-bs-target="#homeCarousel" data-bs-slide="next">
+            <span class="carousel-control-next-icon"></span>
+        </button>
     </div>
 </div>
 
-<div class="row">
-    <div class="container-fluid mt-3 px-3 mx-auto">
-        <div class="row col-lg-9 col-12 mx-auto">
-            <ul class="nav nav-pills mb-4 justify-content-center gap-4 fs-6" id="product-tabs">
-                <li class="nav-item">
-                    <a class="nav-link active" style="border-radius:20px;" href="#" data-bs-toggle="pill"
-                        data-bs-target="#tab-luggage">全部行李箱</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" style="border-radius:20px;" href="#" data-bs-toggle="pill"
-                        data-bs-target="#tab-accessories">行李箱配件</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" style="border-radius:20px;" href="#" data-bs-toggle="pill"
-                        data-bs-target="#tab-travel">旅行周邊</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link " style="border-radius:20px;" href="#" data-bs-toggle="pill"
-                        data-bs-target="#tab-featured">歐印精選</a>
-                </li>
-            </ul>
-            <div class="">
-                <div class="tab-content">
-                    <div class="tab-pane fade show active" id="tab-luggage">
-                        <h4>全部行李箱</h4>
-                        <!-- 篩選 Controls -->
-                        <div class="row mb-4">
-                            <div class="col-md-3 mb-3">
-                                <h5>尺寸篩選</h5>
-                                <select id="size-filter" class="form-select">
-                                    <option value="all" selected>全部尺寸</option>
-                                    <option value="large">28吋以上</option>
-                                    <option value="medium">25~28吋</option>
-                                    <option value="small">21~24吋</option>
-                                    <option value="cabin">20吋以下</option>
-                                </select>
-                            </div>
-                            <div class="col-md-3 mb-3">
-                                <h5>材質篩選</h5>
-                                <select id="material-filter" class="form-select">
-                                    <option value="all" selected>全部材質</option>
-                                    <option value="aluminum">鋁框款</option>
-                                    <option value="zipper">拉鍊款</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="row g-4" id="luggage-container">
-                            <?php
-                            foreach ($luggages as $index => $p) {
-                                if (isset($p['isActive']) ? $p['isActive'] == 1 : true)
-                                    echo renderProductCard($p);
-                            }
-                            ?>
-                        </div>
+<div class="container-fulid mt-3">
+    <div class="row col-lg-9 col-12 mx-auto m-0 p-0">
+        <ul class="nav nav-pills mb-4 col-9 mx-auto justify-content-center gap-4 fs-6" id="product-tabs">
+            <li class="nav-item">
+                <a class="nav-link active" style="border-radius:20px;" href="#" data-bs-toggle="pill"
+                    data-bs-target="#tab-luggage">全部行李箱</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" style="border-radius:20px;" href="#" data-bs-toggle="pill"
+                    data-bs-target="#tab-accessories">行李箱配件</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" style="border-radius:20px;" href="#" data-bs-toggle="pill"
+                    data-bs-target="#tab-travel">旅行周邊</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link " style="border-radius:20px;" href="#" data-bs-toggle="pill"
+                    data-bs-target="#tab-featured">歐印精選</a>
+            </li>
+        </ul>
+        <div class="tab-content">
+            <div class="tab-pane show active m-0 p-0" id="tab-luggage">
+                <h4>全部行李箱</h4>
+                <!-- 篩選 Controls -->
+                <div class="row mb-4">
+                    <div class="col-md-3 mb-3">
+                        <h5>尺寸篩選</h5>
+                        <select id="size-filter" class="form-select">
+                            <option value="all" selected>全部尺寸</option>
+                            <option value="large">28吋以上</option>
+                            <option value="medium">25~28吋</option>
+                            <option value="small">21~24吋</option>
+                            <option value="cabin">20吋以下</option>
+                        </select>
                     </div>
-                    <div class="tab-pane fade" id="tab-accessories">
-                        <h4>行李箱配件</h4>
-                        <div class="row g-4" id="accessories-container"><?php foreach ($accessories as $p)
-                            if (isset($p['isActive']) ? $p['isActive'] == 1 : true)
-                                echo renderProductCard($p); ?></div>
-                    </div>
-                    <div class="tab-pane fade" id="tab-travel">
-                        <h4>旅遊周邊</h4>
-                        <div class="row g-4" id="travel-container"><?php foreach ($travels as $p)
-                            if (isset($p['isActive']) ? $p['isActive'] == 1 : true)
-                                echo renderProductCard($p); ?></div>
-                    </div>
-                    <div class="tab-pane fade" id="tab-featured">
-                        <h4>歐印嚴選</h4>
-                        <div class="row g-4" id="featured-container"><?php foreach ($featureds as $p)
-                            if (isset($p['isActive']) ? $p['isActive'] == 1 : true)
-                                echo renderProductCard($p); ?></div>
+                    <div class="col-md-3 mb-3">
+                        <h5>材質篩選</h5>
+                        <select id="material-filter" class="form-select">
+                            <option value="all" selected>全部材質</option>
+                            <option value="aluminum">鋁框款</option>
+                            <option value="zipper">拉鍊款</option>
+                        </select>
                     </div>
                 </div>
+                <div class="row" id="luggage-container">
+                    <?php
+                    foreach ($luggages as $index => $p) {
+                        if (isset($p['isActive']) ? $p['isActive'] == 1 : true)
+                            echo renderProductCard($p);
+                    }
+                    ?>
+                </div>
+            </div>
+            <div class="tab-pane" id="tab-accessories">
+                <h4>行李箱配件</h4>
+                <div class="row" id="accessories-container"><?php foreach ($accessories as $p)
+                    if (isset($p['isActive']) ? $p['isActive'] == 1 : true)
+                        echo renderProductCard($p); ?></div>
+            </div>
+            <div class="tab-pane" id="tab-travel">
+                <h4>旅遊周邊</h4>
+                <div class="row" id="travel-container"><?php foreach ($travels as $p)
+                    if (isset($p['isActive']) ? $p['isActive'] == 1 : true)
+                        echo renderProductCard($p); ?></div>
+            </div>
+            <div class="tab-pane" id="tab-featured">
+                <h4>歐印嚴選</h4>
+                <div class="row" id="featured-container"><?php foreach ($featureds as $p)
+                    if (isset($p['isActive']) ? $p['isActive'] == 1 : true)
+                        echo renderProductCard($p); ?></div>
             </div>
         </div>
     </div>
