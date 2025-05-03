@@ -43,6 +43,21 @@
         .nav-pills .nav-link img {
             vertical-align: middle;
         }
+
+        /* 全域隱藏滾動條，但仍可滑動 */
+        html,
+        body {
+            scrollbar-width: none;
+            /* Firefox */
+            -ms-overflow-style: none;
+            /* IE 10+ */
+        }
+
+        /* Chrome、Edge、Safari */
+        html::-webkit-scrollbar,
+        body::-webkit-scrollbar {
+            display: none;
+        }
     </style>
     <?php outputProductTitleScript(); ?>
 </head>
@@ -56,7 +71,7 @@
                     <img src="imgs/title.png" alt="" height="49">
                 </a>
 
-                <ul class="nav justify-content-center mb-xl-0 gap-4">
+                <ul class="nav justify-content-center mb-xl-0 gap-2">
                     <?php renderNavItems(getNavItems(), ''); ?>
                 </ul>
 
