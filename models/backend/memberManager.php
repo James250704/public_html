@@ -183,20 +183,12 @@ try {
                 </table>
             </div>
 
-            <!-- 分頁控制 -->
-            <nav aria-label="會員列表分頁">
-                <ul class="pagination justify-content-center mt-4">
-                    <li class="page-item disabled">
-                        <a class="page-link" href="#" tabindex="-1" aria-disabled="true">上一頁</a>
-                    </li>
-                    <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                    <li class="page-item"><a class="page-link" href="#">2</a></li>
-                    <li class="page-item"><a class="page-link" href="#">3</a></li>
-                    <li class="page-item">
-                        <a class="page-link" href="#">下一頁</a>
-                    </li>
-                </ul>
-            </nav>
+            <?php require_once __DIR__ . '/functions/pagination.php';
+
+            // 使用分頁功能
+            $pagination = generatePagination($currentPage, $totalPages, $filterParams);
+            ?>
+            <?php echo $pagination; ?>
         </div>
     </div>
 

@@ -14,7 +14,7 @@ function getNavItems()
         ['url' => 'myOrder.php', 'text' => '我的訂單'],
     ];
 
-    if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true && $_SESSION['user_role'] === 'admin') {
+    if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true && ($_SESSION['user_role'] === 'admin' || $_SESSION['user_role'] === 'staff')) {
         $items[] = ['url' => 'backend.php', 'text' => '後台管理'];
     }
 

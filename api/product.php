@@ -242,6 +242,235 @@ function renderProductCard(array $product)
     return $output;
 }
 
+// 獲取所有商品（帶分頁、篩選和搜索功能）
+function getAllProducts($page = 1, $limit = 10, $type = '', $status = '', $search = '')
+{
+    $pdo = getDBConnection();
+    try {
+        $params = [];
+        $sql = "SELECT p.ProductID, p.Type, p.ProductName, p.Introdution, p.isActive, 
+                COUNT(o.OptionID) as OptionCount 
+                FROM Product p 
+                LEFT JOIN Options o ON p.ProductID = o.ProductID ";
+
+        // 添加篩選條件
+        $whereClause = [];
+
+        if (!empty($type)) {
+            $whereClause[] = "p.Type = :type";
+            $params[':type'] = $type;
+        }
+
+        if ($status !== '') {
+            $whereClause[] = "p.isActive = :status";
+            $params[':status'] = $status;
+        }
+
+        if (!empty($search)) {
+            $whereClause[] = "(p.ProductName LIKE :search OR p.ProductID LIKE :search)";
+            $params[':search'] = "%$search%";
+        }
+
+        if (!empty($whereClause)) {
+            $sql .= " WHERE " . implode(" AND ", $whereClause);
+        }
+
+        $sql .= " GROUP BY p.ProductID";
+
+        // 計算總記錄數
+        $countSql = "SELECT COUNT(*) FROM (" . $sql . ") as count_table";
+        $countStmt = $pdo->prepare($countSql);
+        $countStmt->execute($params);
+        $totalRecords = $countStmt->fetchColumn();
+
+        // 添加分頁
+        $offset = ($page - 1) * $limit;
+        $sql .= " LIMIT :limit OFFSET :offset";
+        $params[':limit'] = $limit;
+        $params[':offset'] = $offset;
+
+        $stmt = $pdo->prepare($sql);
+        foreach ($params as $key => $value) {
+            if ($key == ':limit') {
+                $stmt->bindValue($key, $value, PDO::PARAM_INT);
+            } else if ($key == ':offset') {
+                $stmt->bindValue($key, $value, PDO::PARAM_INT);
+            } else if ($key == ':status') {
+                $stmt->bindValue($key, $value, PDO::PARAM_INT);
+            } else {
+                $stmt->bindValue($key, $value);
+            }
+        }
+        $stmt->execute();
+
+        return [
+            'products' => $stmt->fetchAll(PDO::FETCH_ASSOC),
+            'totalRecords' => $totalRecords,
+            'totalPages' => ceil($totalRecords / $limit),
+            'currentPage' => $page
+        ];
+    } catch (PDOException $e) {
+        error_log("Error fetching products: " . $e->getMessage());
+        return [
+            'products' => [],
+            'totalRecords' => 0,
+            'totalPages' => 0,
+            'currentPage' => $page
+        ];
+    }
+}
+
+// 獲取商品選項
+function getProductOptions($productId)
+{
+    $pdo = getDBConnection();
+    try {
+        $stmt = $pdo->prepare("SELECT * FROM Options WHERE ProductID = ?");
+        $stmt->execute([$productId]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+        error_log("Error fetching product options: " . $e->getMessage());
+        return [];
+    }
+}
+
+// 獲取商品類型列表
+function getProductTypes()
+{
+    $pdo = getDBConnection();
+    try {
+        $stmt = $pdo->prepare("SELECT DISTINCT Type FROM Product");
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_COLUMN);
+    } catch (PDOException $e) {
+        error_log("Error fetching product types: " . $e->getMessage());
+        return [];
+    }
+}
+
+// 獲取單個商品詳情
+function getProduct($productId)
+{
+    $pdo = getDBConnection();
+    try {
+        $stmt = $pdo->prepare("SELECT * FROM Product WHERE ProductID = ?");
+        $stmt->execute([$productId]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+        error_log("Error fetching product: " . $e->getMessage());
+        return null;
+    }
+}
+
+// 添加新商品
+function addProduct($data)
+{
+    $pdo = getDBConnection();
+    try {
+        $pdo->beginTransaction();
+
+        $stmt = $pdo->prepare("INSERT INTO Product (Type, ProductName, Introdution, isActive) VALUES (?, ?, ?, ?)");
+        $stmt->execute([$data['type'], $data['name'], $data['intro'], $data['active']]);
+
+        $productId = $pdo->lastInsertId();
+        $pdo->commit();
+
+        return [
+            'success' => true,
+            'productId' => $productId
+        ];
+    } catch (PDOException $e) {
+        $pdo->rollBack();
+        error_log("Error adding product: " . $e->getMessage());
+        return [
+            'success' => false,
+            'message' => "添加商品失敗: " . $e->getMessage()
+        ];
+    }
+}
+
+// 更新商品
+function updateProduct($productId, $data)
+{
+    $pdo = getDBConnection();
+    try {
+        $pdo->beginTransaction();
+
+        $stmt = $pdo->prepare("UPDATE Product SET Type = ?, ProductName = ?, Introdution = ?, isActive = ? WHERE ProductID = ?");
+        $stmt->execute([$data['type'], $data['name'], $data['intro'], $data['active'], $productId]);
+
+        $pdo->commit();
+
+        return [
+            'success' => true
+        ];
+    } catch (PDOException $e) {
+        $pdo->rollBack();
+        error_log("Error updating product: " . $e->getMessage());
+        return [
+            'success' => false,
+            'message' => "更新商品失敗: " . $e->getMessage()
+        ];
+    }
+}
+
+// 刪除商品
+function deleteProduct($productId)
+{
+    $pdo = getDBConnection();
+    try {
+        $pdo->beginTransaction();
+
+        // 先刪除商品選項
+        $stmt = $pdo->prepare("DELETE FROM Options WHERE ProductID = ?");
+        $stmt->execute([$productId]);
+
+        // 再刪除商品
+        $stmt = $pdo->prepare("DELETE FROM Product WHERE ProductID = ?");
+        $stmt->execute([$productId]);
+
+        $pdo->commit();
+
+        return [
+            'success' => true
+        ];
+    } catch (PDOException $e) {
+        $pdo->rollBack();
+        error_log("Error deleting product: " . $e->getMessage());
+        return [
+            'success' => false,
+            'message' => "刪除商品失敗: " . $e->getMessage()
+        ];
+    }
+}
+
+// 添加商品選項
+function addProductOption($productId, $data)
+{
+    $pdo = getDBConnection();
+    try {
+        $pdo->beginTransaction();
+
+        $stmt = $pdo->prepare("INSERT INTO Options (ProductID, Color, Size, SizeDescription, Price, Stock) VALUES (?, ?, ?, ?, ?, ?)");
+        $stmt->execute([$productId, $data['color'], $data['size'], $data['sizeDesc'], $data['price'], $data['stock']]);
+
+        $optionId = $pdo->lastInsertId();
+        $pdo->commit();
+
+        return [
+            'success' => true,
+            'optionId' => $optionId
+        ];
+    } catch (PDOException $e) {
+        $pdo->rollBack();
+        error_log("Error adding product option: " . $e->getMessage());
+        return [
+            'success' => false,
+            'message' => "添加商品選項失敗: " . $e->getMessage()
+        ];
+    }
+}
+
 // API 端點處理
 if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action'])) {
 

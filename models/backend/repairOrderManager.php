@@ -76,10 +76,7 @@ try {
         <h3><i class="bi bi-tools me-2"></i>維修訂單管理</h3>
         <div>
             <button type="button" class="btn btn-outline-primary me-2" id="exportRepairs">
-                <i class="bi bi-file-earmark-excel me-2"></i>匯出維修訂單
-            </button>
-            <button type="button" class="btn btn-primary" id="refreshRepairs">
-                <i class="bi bi-arrow-clockwise me-2"></i>刷新列表
+                匯出維修訂單
             </button>
         </div>
     </div>
@@ -169,20 +166,10 @@ try {
                 </table>
             </div>
 
-            <!-- 分頁控制 -->
-            <nav aria-label="維修訂單列表分頁">
-                <ul class="pagination justify-content-center mt-4">
-                    <li class="page-item disabled">
-                        <a class="page-link" href="#" tabindex="-1" aria-disabled="true">上一頁</a>
-                    </li>
-                    <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                    <li class="page-item"><a class="page-link" href="#">2</a></li>
-                    <li class="page-item"><a class="page-link" href="#">3</a></li>
-                    <li class="page-item">
-                        <a class="page-link" href="#">下一頁</a>
-                    </li>
-                </ul>
-            </nav>
+            <?php require_once __DIR__ . '/functions/pagination.php';
+
+            // 使用分頁功能
+            $pagination = generatePagination($currentPage, $totalPages, $filterParams); ?>
         </div>
     </div>
 
@@ -239,10 +226,4 @@ try {
         });
     });
 
-    // 刷新維修訂單列表
-    document.getElementById('refreshRepairs').addEventListener('click', function () {
-        console.log('刷新維修訂單列表');
-        // 實際刷新功能將在後續開發中實現
-        location.reload();
-    });
 </script>

@@ -11,6 +11,15 @@ function authenticateUser($phone, $password)
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if ($user && password_verify($password, $user['Password'])) {
+            // 根據 IsAdmin 值設定不同角色
+            // 0: 一般會員, 1: 員工, 2: 管理員
+            $role = 'member';
+            if ($user['IsAdmin'] == 1) {
+                $role = 'staff';
+            } elseif ($user['IsAdmin'] == 2) {
+                $role = 'admin';
+            }
+
             return [
                 'success' => true,
                 'user' => [
@@ -18,7 +27,7 @@ function authenticateUser($phone, $password)
                     'name' => $user['Name'],
                     'phone' => $user['Phone'],
                     'email' => $user['Email'],
-                    'role' => $user['IsAdmin'] ? 'admin' : 'member'
+                    'role' => $role
                 ]
             ];
         }

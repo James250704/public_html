@@ -1,107 +1,69 @@
 <?php
-// 商品管理文件
+// admin/products.php
 
 // 防止直接訪問此文件
-if (!defined('INCLUDED_FROM_ADMIN') && !isset($_SESSION['logged_in'])) {
-    header('Location: ../../login.php');
-    exit;
-}
+defined('INCLUDED_FROM_ADMIN') || exit(header('Location: ../../login.php'));
 
-// 引入數據庫連接
 require_once __DIR__ . '/../../api/db.php';
+require_once __DIR__ . '/../../api/product.php';
 
-// 獲取所有商品
-function getAllProducts()
-{
-    $pdo = getDBConnection();
-    try {
-        $stmt = $pdo->prepare("SELECT p.ProductID, p.Type, p.ProductName, p.Introdution, p.isActive, 
-                              COUNT(o.OptionID) as OptionCount 
-                              FROM Product p 
-                              LEFT JOIN Options o ON p.ProductID = o.ProductID 
-                              GROUP BY p.ProductID");
-        $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    } catch (PDOException $e) {
-        error_log("Error fetching products: " . $e->getMessage());
-        return [];
-    }
-}
+// 處理 GET 參數
+$page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
+$type = isset($_GET['type']) ? trim($_GET['type']) : '';
+$status = isset($_GET['status']) ? trim($_GET['status']) : '';
+$search = isset($_GET['search']) ? trim($_GET['search']) : '';
 
-// 獲取商品選項
-function getProductOptions($productId)
-{
-    $pdo = getDBConnection();
-    try {
-        $stmt = $pdo->prepare("SELECT * FROM Options WHERE ProductID = ?");
-        $stmt->execute([$productId]);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    } catch (PDOException $e) {
-        error_log("Error fetching product options: " . $e->getMessage());
-        return [];
-    }
-}
-
-// 獲取商品類型列表
-function getProductTypes()
-{
-    $pdo = getDBConnection();
-    try {
-        $stmt = $pdo->prepare("SELECT DISTINCT Type FROM Product");
-        $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_COLUMN);
-    } catch (PDOException $e) {
-        error_log("Error fetching product types: " . $e->getMessage());
-        return [];
-    }
-}
-
-// 嘗試獲取商品列表
 try {
-    $products = getAllProducts();
+    $result = getAllProducts($page, 10, $type, $status, $search);
+    $products = $result['products'];
+    $totalPages = $result['totalPages'];
+    $currentPage = $result['currentPage'];
     $productTypes = getProductTypes();
 } catch (Exception $e) {
     error_log("Error in product manager: " . $e->getMessage());
     $products = [];
+    $totalPages = 1;
+    $currentPage = 1;
     $productTypes = [];
 }
 ?>
 
 <div class="container-fluid p-0">
-    <!-- 商品管理頁面標題 -->
+    <!-- 標題 & 按鈕 -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h3><i class="bi bi-box-seam me-2"></i>商品管理</h3>
-        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addProductModal">
-            <i class="bi bi-plus-circle me-2"></i>新增商品
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addProductModal">
+            新增商品
         </button>
     </div>
 
-    <!-- 商品篩選區 -->
+    <!-- 篩選區 -->
     <div class="card mb-4">
         <div class="card-body">
             <div class="row g-3">
                 <div class="col-md-4">
-                    <label for="filterType" class="form-label">商品類型</label>
-                    <select class="form-select" id="filterType">
+                    <label class="form-label">商品類型</label>
+                    <select id="filterType" class="form-select">
                         <option value="">全部類型</option>
-                        <?php foreach ($productTypes as $type): ?>
-                            <option value="<?php echo htmlspecialchars($type); ?>">
-                                <?php echo htmlspecialchars($type); ?>
+                        <?php foreach ($productTypes as $t): ?>
+                            <option value="<?= htmlspecialchars($t) ?>" <?= $t === $type ? 'selected' : '' ?>>
+                                <?= htmlspecialchars($t) ?>
                             </option>
                         <?php endforeach; ?>
                     </select>
                 </div>
                 <div class="col-md-4">
-                    <label for="filterStatus" class="form-label">商品狀態</label>
-                    <select class="form-select" id="filterStatus">
+                    <label class="form-label">商品狀態</label>
+                    <select id="filterStatus" class="form-select">
                         <option value="">全部狀態</option>
-                        <option value="1">啟用</option>
-                        <option value="0">停用</option>
+                        <option value="1" <?= $status === '1' ? 'selected' : '' ?>>啟用</option>
+                        <option value="0" <?= $status === '0' ? 'selected' : '' ?>>停用</option>
                     </select>
                 </div>
                 <div class="col-md-4">
-                    <label for="searchProduct" class="form-label">搜尋商品</label>
-                    <input type="text" class="form-control" id="searchProduct" placeholder="輸入商品名稱或ID">
+                    <label class="form-label">搜尋商品</label>
+                    <input id="searchProduct" type="text" class="form-control" placeholder="輸入商品名稱或ID"
+                        value="<?= htmlspecialchars($search) ?>">
                 </div>
             </div>
         </div>
@@ -111,13 +73,13 @@ try {
     <div class="card">
         <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-hover">
+                <table class="table table-hover align-middle">
                     <thead>
                         <tr>
                             <th>ID</th>
                             <th>商品名稱</th>
                             <th>類型</th>
-                            <th>選項數量</th>
+                            <th>總庫存</th>
                             <th>狀態</th>
                             <th>操作</th>
                         </tr>
@@ -127,64 +89,52 @@ try {
                             <tr>
                                 <td colspan="6" class="text-center">暫無商品數據</td>
                             </tr>
-                        <?php else: ?>
-                            <?php foreach ($products as $product): ?>
+                        <?php else:
+                            foreach ($products as $p): ?>
                                 <tr>
-                                    <td><?php echo htmlspecialchars($product['ProductID']); ?></td>
-                                    <td><?php echo htmlspecialchars($product['ProductName']); ?></td>
-                                    <td><?php echo htmlspecialchars($product['Type']); ?></td>
-                                    <td><?php echo htmlspecialchars($product['OptionCount']); ?></td>
+                                    <td><?= htmlspecialchars($p['ProductID']) ?></td>
+                                    <td><?= htmlspecialchars($p['ProductName']) ?></td>
+                                    <td><?= htmlspecialchars($p['Type']) ?></td>
+                                    <td><?= htmlspecialchars($p['OptionCount']) ?></td>
                                     <td>
-                                        <?php if ($product['isActive'] == 1): ?>
-                                            <span class="badge bg-success">啟用</span>
+                                        <?php if ($p['isActive']): ?>
+                                            <span class="badge bg-success">上架</span>
                                         <?php else: ?>
-                                            <span class="badge bg-secondary">停用</span>
+                                            <span class="badge bg-secondary">下架</span>
                                         <?php endif; ?>
                                     </td>
                                     <td>
                                         <div class="btn-group">
-                                            <button type="button" class="btn btn-sm btn-outline-primary edit-product"
-                                                data-id="<?php echo htmlspecialchars($product['ProductID']); ?>">
-                                                <i class="bi bi-pencil"></i>
-                                            </button>
-                                            <button type="button" class="btn btn-sm btn-outline-info view-options"
-                                                data-id="<?php echo htmlspecialchars($product['ProductID']); ?>">
-                                                <i class="bi bi-list-ul"></i>
-                                            </button>
-                                            <button type="button" class="btn btn-sm btn-outline-danger delete-product"
-                                                data-id="<?php echo htmlspecialchars($product['ProductID']); ?>">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
+                                            <button class="btn btn-sm btn-outline-primary edit-product"
+                                                data-id="<?= $p['ProductID'] ?>"><i class="bi bi-pencil"></i></button>
+                                            <button class="btn btn-sm btn-outline-info view-options"
+                                                data-id="<?= $p['ProductID'] ?>"><i class="bi bi-list-ul"></i></button>
+                                            <button class="btn btn-sm btn-outline-danger delete-product"
+                                                data-id="<?= $p['ProductID'] ?>"><i class="bi bi-trash"></i></button>
                                         </div>
                                     </td>
                                 </tr>
-                            <?php endforeach; ?>
-                        <?php endif; ?>
+                            <?php endforeach; endif; ?>
                     </tbody>
                 </table>
             </div>
 
-            <!-- 分頁控制 -->
-            <nav aria-label="商品列表分頁">
-                <ul class="pagination justify-content-center mt-4">
-                    <li class="page-item disabled">
-                        <a class="page-link" href="#" tabindex="-1" aria-disabled="true">上一頁</a>
-                    </li>
-                    <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                    <li class="page-item"><a class="page-link" href="#">2</a></li>
-                    <li class="page-item"><a class="page-link" href="#">3</a></li>
-                    <li class="page-item">
-                        <a class="page-link" href="#">下一頁</a>
-                    </li>
-                </ul>
-            </nav>
+            <?php require_once __DIR__ . '/functions/pagination.php';
+            $filterParams = [
+                'type' => $type,
+                'status' => $status,
+                'search' => $search
+            ];
+            $pagination = generatePagination($currentPage, $totalPages, $filterParams);
+            echo $pagination; ?>
+
         </div>
     </div>
 
     <!-- 新增商品模態框 -->
     <div class="modal fade" id="addProductModal" tabindex="-1" aria-labelledby="addProductModalLabel"
         aria-hidden="true">
-        <div class="modal-dialog modal-lg">
+        <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div class="modal-header bg-primary text-white">
                     <h5 class="modal-title" id="addProductModalLabel">新增商品</h5>
@@ -193,101 +143,137 @@ try {
                 </div>
                 <div class="modal-body">
                     <form id="addProductForm">
-                        <div class="mb-3">
-                            <label for="productName" class="form-label">商品名稱</label>
-                            <input type="text" class="form-control" id="productName" required>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="productName" class="form-label">商品名稱</label>
+                                    <input type="text" class="form-control" id="productName" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="productType" class="form-label">商品類型</label>
+                                    <select class="form-select" id="productType" required>
+                                        <option value="" selected disabled>選擇商品類型</option>
+                                        <option value="aluminum">鋁框款</option>
+                                        <option value="zipper">拉鍊款</option>
+                                        <option value="accessories">行李箱配件</option>
+                                        <option value="travel">旅遊周邊</option>
+                                        <option value="featured">精選商品</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="productIntro" class="form-label">商品介紹</label>
+                                    <textarea class="form-control" id="productIntro" rows="3" required></textarea>
+                                </div>
+                                <div class="mb-3">
+                                    <div class="form-check form-switch d-flex align-items-center">
+                                        <input class="form-check-input" type="checkbox" id="productActive"
+                                            style="transform: scale(1.5); margin-right: 1rem; margin-left: 1rem;">
+                                        <label class="form-check-label" for="productActive"><span
+                                                id="statusText">下架</span></label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">主要圖片</label>
+                                    <div class="border rounded p-2 text-center" style="height: 150px;">
+                                        <img id="mainImagePreview" src="" class="img-fluid h-100"
+                                            style="display: none;">
+                                        <button type="button" class="btn btn-outline-primary mt-3" id="uploadMainImage">
+                                            <i class="bi bi-upload"></i> 上傳圖片
+                                        </button>
+                                        <input type="file" id="mainImageInput" accept="image/*" style="display: none;">
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">詳細圖片</label>
+                                    <div id="galleryImagesContainer" class="border rounded p-2">
+                                        <div class="d-flex flex-wrap gap-2 align-items-center"
+                                            id="galleryImagesPreview">
+                                        </div>
+                                        <button type="button" class="btn btn-outline-primary mt-2" id="addGalleryImage">
+                                            <i class="bi bi-plus"></i> 添加圖片
+                                        </button>
+                                        <input type="file" id="galleryImageInput" accept="image/*" multiple
+                                            style="display: none;">
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="mb-3">
-                            <label for="productType" class="form-label">商品類型</label>
-                            <select class="form-select" id="productType" required>
-                                <option value="" selected disabled>選擇商品類型</option>
-                                <?php foreach ($productTypes as $type): ?>
-                                    <option value="<?php echo htmlspecialchars($type); ?>">
-                                        <?php echo htmlspecialchars($type); ?>
-                                    </option>
-                                <?php endforeach; ?>
-                                <option value="new">新增類型...</option>
-                            </select>
-                        </div>
-                        <div class="mb-3 d-none" id="newTypeGroup">
-                            <label for="newType" class="form-label">新類型名稱</label>
-                            <input type="text" class="form-control" id="newType">
-                        </div>
-                        <div class="mb-3">
-                            <label for="productIntro" class="form-label">商品介紹</label>
-                            <textarea class="form-control" id="productIntro" rows="3" required></textarea>
-                        </div>
-                        <div class="mb-3">
-                            <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" id="productActive" checked>
-                                <label class="form-check-label" for="productActive">商品狀態（啟用/停用）</label>
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <h5>尺寸與價格</h5>
+                                <div id="sizePriceContainer">
+                                    <div class="card mb-3 size-price-block">
+                                        <div class="card-body">
+                                            <div class="row g-3">
+                                                <div class="col-md-3">
+                                                    <label class="form-label">尺寸</label>
+                                                    <input type="number" class="form-control size-input"
+                                                        placeholder="尺寸">
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <label class="form-label">尺寸描述</label>
+                                                    <input type="text" class="form-control size-desc-input"
+                                                        placeholder="尺寸描述">
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <label class="form-label">價格</label>
+                                                    <input type="number" class="form-control price-input"
+                                                        placeholder="價格">
+                                                </div>
+                                                <div class="col-md-3 text-end">
+                                                    <button type="button"
+                                                        class="btn btn-outline-danger remove-size-btn">
+                                                        <i class="bi bi-trash"></i> 刪除
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div class="row mt-3">
+                                                <div class="col-12">
+                                                    <button type="button" class="btn btn-outline-primary add-color-btn">
+                                                        <i class="bi bi-plus"></i> 添加顏色
+                                                    </button>
+                                                    <div class="color-stock-container mt-3">
+                                                        <div class="mb-2">
+                                                            <div class="row g-2">
+                                                                <div class="col-md-6">
+                                                                    <input type="text" class="form-control"
+                                                                        placeholder="顏色描述">
+                                                                </div>
+                                                                <div class="col-md-4">
+                                                                    <input type="number" class="form-control"
+                                                                        placeholder="庫存">
+                                                                </div>
+                                                                <div class="col-md-2">
+                                                                    <button type="button"
+                                                                        class="btn btn-sm btn-outline-danger w-100 remove-color-btn"
+                                                                        disabled>
+                                                                        <i class="bi bi-trash"></i>
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button type="button" class="btn btn-outline-primary mt-2" id="addSizeRow">
+                                    <i class="bi bi-plus"></i> 添加尺寸
+                                </button>
                             </div>
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-                    <button type="button" class="btn btn-primary" id="saveProduct">保存商品</button>
+                    <button type="button" class="btn btn-primary" id="addProduct">新增商品</button>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<script>
-    // 當選擇「新增類型」時顯示新類型輸入框
-    document.getElementById('productType').addEventListener('change', function () {
-        const newTypeGroup = document.getElementById('newTypeGroup');
-        if (this.value === 'new') {
-            newTypeGroup.classList.remove('d-none');
-        } else {
-            newTypeGroup.classList.add('d-none');
-        }
-    });
-
-    // 商品篩選功能
-    document.getElementById('filterType').addEventListener('change', filterProducts);
-    document.getElementById('filterStatus').addEventListener('change', filterProducts);
-    document.getElementById('searchProduct').addEventListener('input', filterProducts);
-
-    function filterProducts() {
-        console.log('篩選商品功能尚未實現');
-        // 實際篩選功能將在後續開發中實現
-    }
-
-    // 保存商品按鈕點擊事件
-    document.getElementById('saveProduct').addEventListener('click', function () {
-        console.log('保存商品功能尚未實現');
-        // 實際保存功能將在後續開發中實現
-
-        // 顯示成功提示
-        const modal = bootstrap.Modal.getInstance(document.getElementById('addProductModal'));
-        modal.hide();
-
-        // 使用 Bootstrap 的 Toast 組件顯示提示
-        const toastContainer = document.createElement('div');
-        toastContainer.className = 'position-fixed bottom-0 end-0 p-3';
-        toastContainer.style.zIndex = '11';
-
-        toastContainer.innerHTML = `
-            <div class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
-                <div class="d-flex">
-                    <div class="toast-body">
-                        <i class="bi bi-check-circle me-2"></i>商品已成功保存！
-                    </div>
-                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-                </div>
-            </div>
-        `;
-
-        document.body.appendChild(toastContainer);
-        const toastElement = toastContainer.querySelector('.toast');
-        const toast = new bootstrap.Toast(toastElement, { delay: 3000 });
-        toast.show();
-
-        // 3秒後移除 Toast 元素
-        setTimeout(() => {
-            document.body.removeChild(toastContainer);
-        }, 3500);
-    });
-</script>
+<script src="models/backend/functions/prodcut.js"></script>
