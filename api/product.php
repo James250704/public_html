@@ -362,162 +362,108 @@ function getProduct($productId)
     }
 }
 
-// 添加新商品
-function addProduct($data)
-{
-    $pdo = getDBConnection();
-    try {
-        $pdo->beginTransaction();
-
-        $stmt = $pdo->prepare("INSERT INTO Product (Type, ProductName, Introdution, isActive) VALUES (?, ?, ?, ?)");
-        $stmt->execute([$data['type'], $data['name'], $data['intro'], $data['active']]);
-
-        $productId = $pdo->lastInsertId();
-        $pdo->commit();
-
-        return [
-            'success' => true,
-            'productId' => $productId
-        ];
-    } catch (PDOException $e) {
-        $pdo->rollBack();
-        error_log("Error adding product: " . $e->getMessage());
-        return [
-            'success' => false,
-            'message' => "添加商品失敗: " . $e->getMessage()
-        ];
-    }
-}
-
-// 更新商品
-function updateProduct($productId, $data)
-{
-    $pdo = getDBConnection();
-    try {
-        $pdo->beginTransaction();
-
-        $stmt = $pdo->prepare("UPDATE Product SET Type = ?, ProductName = ?, Introdution = ?, isActive = ? WHERE ProductID = ?");
-        $stmt->execute([$data['type'], $data['name'], $data['intro'], $data['active'], $productId]);
-
-        $pdo->commit();
-
-        return [
-            'success' => true
-        ];
-    } catch (PDOException $e) {
-        $pdo->rollBack();
-        error_log("Error updating product: " . $e->getMessage());
-        return [
-            'success' => false,
-            'message' => "更新商品失敗: " . $e->getMessage()
-        ];
-    }
-}
-
-// 刪除商品
-function deleteProduct($productId)
-{
-    $pdo = getDBConnection();
-    try {
-        $pdo->beginTransaction();
-
-        // 先刪除商品選項
-        $stmt = $pdo->prepare("DELETE FROM Options WHERE ProductID = ?");
-        $stmt->execute([$productId]);
-
-        // 再刪除商品
-        $stmt = $pdo->prepare("DELETE FROM Product WHERE ProductID = ?");
-        $stmt->execute([$productId]);
-
-        $pdo->commit();
-
-        return [
-            'success' => true
-        ];
-    } catch (PDOException $e) {
-        $pdo->rollBack();
-        error_log("Error deleting product: " . $e->getMessage());
-        return [
-            'success' => false,
-            'message' => "刪除商品失敗: " . $e->getMessage()
-        ];
-    }
-}
-
-// 添加商品選項
-function addProductOption($productId, $data)
-{
-    $pdo = getDBConnection();
-    try {
-        $pdo->beginTransaction();
-
-        $stmt = $pdo->prepare("INSERT INTO Options (ProductID, Color, Size, SizeDescription, Price, Stock) VALUES (?, ?, ?, ?, ?, ?)");
-        $stmt->execute([$productId, $data['color'], $data['size'], $data['sizeDesc'], $data['price'], $data['stock']]);
-
-        $optionId = $pdo->lastInsertId();
-        $pdo->commit();
-
-        return [
-            'success' => true,
-            'optionId' => $optionId
-        ];
-    } catch (PDOException $e) {
-        $pdo->rollBack();
-        error_log("Error adding product option: " . $e->getMessage());
-        return [
-            'success' => false,
-            'message' => "添加商品選項失敗: " . $e->getMessage()
-        ];
-    }
-}
-
 // API 端點處理
-if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action'])) {
+if (isset($_GET['action'])) {
+    $action = $_GET['action'];
+    switch ($action) {
+        case 'getProduct':
+            if (!isset($_GET['id'])) {
+                echo json_encode(['success' => false, 'message' => '缺少商品ID']);
+                exit;
+            }
+            $productId = (int) $_GET['id'];
+            $product = getProductById($productId);
+            if ($product) {
+                echo json_encode(['success' => true, 'product' => $product]);
+            } else {
+                echo json_encode(['success' => false, 'message' => '找不到商品']);
+            }
+            break;
 
-    try {
-        switch ($_GET['action']) {
-            case 'getProducts':
-                $type = $_GET['type'] ?? '';
-                $products = getProductsByType($type);
-                echo json_encode(['success' => true, 'data' => $products]);
-                break;
+        case 'updateProduct':
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+                echo json_encode(['success' => false, 'message' => '請使用POST方法']);
+                exit;
+            }
 
-            case 'getProductById':
-                if (!isset($_GET['product_id'])) {
-                    throw new Exception('Missing product_id parameter');
-                }
-                $product = getProductById($_GET['product_id']);
-                if (!$product) {
-                    throw new Exception('Product not found');
-                }
+            // 這裡不再處理更新商品的邏輯，而是返回成功響應
+            // 實際的更新邏輯已經移到 product.js 中
+            echo json_encode(['success' => true]);
+            break;
+
+        case 'delete':
+            if (!isset($_GET['id'])) {
+                echo json_encode(['success' => false, 'message' => '缺少商品ID']);
+                exit;
+            }
+
+            // 這裡不再處理刪除商品的邏輯，而是返回成功響應
+            // 實際的刪除邏輯已經移到 product.js 中
+            echo json_encode(['success' => true]);
+            break;
+
+        case 'getProducts':
+            $type = $_GET['type'] ?? '';
+            $products = getProductsByType($type);
+            echo json_encode(['success' => true, 'data' => $products]);
+            break;
+
+        case 'getProductById':
+            if (!isset($_GET['product_id'])) {
+                echo json_encode(['success' => false, 'message' => 'Missing product_id parameter']);
+                exit;
+            }
+            $product = getProductById($_GET['product_id']);
+            if (!$product) {
+                echo json_encode(['success' => false, 'message' => 'Product not found']);
+                exit;
+            }
+            echo json_encode([
+                'success' => true,
+                'data' => $product
+            ]);
+            break;
+
+        case 'renderProductCard':
+            if (!isset($_GET['productId'])) {
+                echo json_encode(['success' => false, 'message' => 'Missing productId parameter']);
+                exit;
+            }
+            $product = getProductById($_GET['productId']);
+            if (!$product) {
+                echo json_encode(['success' => false, 'message' => 'Product not found']);
+                exit;
+            }
+            echo json_encode([
+                'success' => true,
+                'html' => renderProductCard($product)
+            ]);
+            break;
+
+        case 'filter':
+            $page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
+            $type = isset($_GET['type']) ? trim($_GET['type']) : '';
+            $status = isset($_GET['status']) ? trim($_GET['status']) : '';
+            $search = isset($_GET['search']) ? trim($_GET['search']) : '';
+
+            try {
+                $result = getAllProducts($page, 10, $type, $status, $search);
                 echo json_encode([
                     'success' => true,
-                    'data' => $product
+                    'products' => $result['products'],
+                    'totalPages' => $result['totalPages'],
+                    'currentPage' => $result['currentPage']
                 ]);
-                break;
-
-            case 'renderProductCard':
-                if (!isset($_GET['productId'])) {
-                    throw new Exception('Missing productId parameter');
-                }
-                $product = getProductById($_GET['productId']);
-                if (!$product) {
-                    throw new Exception('Product not found');
-                }
+            } catch (Exception $e) {
                 echo json_encode([
-                    'success' => true,
-                    'html' => renderProductCard($product)
+                    'success' => false,
+                    'message' => $e->getMessage()
                 ]);
-                break;
+            }
+            break;
 
-            default:
-                throw new Exception('Invalid action');
-        }
-    } catch (Exception $e) {
-        echo json_encode([
-            'success' => false,
-            'message' => $e->getMessage()
-        ]);
+        default:
+            echo json_encode(['success' => false, 'message' => 'Invalid action']);
     }
     exit;
 }

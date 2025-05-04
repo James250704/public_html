@@ -107,8 +107,6 @@ try {
                                         <div class="btn-group">
                                             <button class="btn btn-sm btn-outline-primary edit-product"
                                                 data-id="<?= $p['ProductID'] ?>"><i class="bi bi-pencil"></i></button>
-                                            <button class="btn btn-sm btn-outline-info view-options"
-                                                data-id="<?= $p['ProductID'] ?>"><i class="bi bi-list-ul"></i></button>
                                             <button class="btn btn-sm btn-outline-danger delete-product"
                                                 data-id="<?= $p['ProductID'] ?>" title="刪除商品">
                                                 <i class="bi bi-trash"></i>
@@ -240,11 +238,12 @@ try {
                                                         <div class="mb-2 color-row">
                                                             <div class="row g-2">
                                                                 <div class="col-md-6">
-                                                                    <input type="text" class="form-control"
+                                                                    <input type="text" class="form-control color-input"
                                                                         placeholder="顏色描述">
                                                                 </div>
                                                                 <div class="col-md-4">
-                                                                    <input type="number" class="form-control"
+                                                                    <input type="number"
+                                                                        class="form-control stock-input"
                                                                         placeholder="庫存">
                                                                 </div>
                                                                 <div class="col-md-2">
