@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/../../../api/db.php';
+require_once __DIR__ . '/../../../../api/db.php';
 
 // 設置 JSON 頭
 header('Content-Type: application/json');

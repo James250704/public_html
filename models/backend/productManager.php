@@ -277,4 +277,4 @@ try {
     </div>
 </div>
 
-<script src="models/backend/functions/product.js"></script>
+<script src="models/backend/functions/product/product.js"></script>
