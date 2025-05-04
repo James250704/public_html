@@ -77,12 +77,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($result['success'] && isset($_POST['sizes'])) {
         $sizes = json_decode($_POST['sizes'], true);
         if (is_array($sizes)) {
-            // 先刪除現有的選項
+            // 更新現有選項或添加新選項
             $pdo = getDBConnection();
-            $stmt = $pdo->prepare("DELETE FROM Options WHERE ProductID = ?");
-            $stmt->execute([$productId]);
-
-            // 添加新的選項
             foreach ($sizes as $size) {
                 if (empty($size['size']) || empty($size['price']))
                     continue;
