@@ -184,7 +184,7 @@ $(document).ready(function () {
             } else {
                 // 使用添加商品函數
                 const res = await fetch(
-                    "/new_test/models/backend/functions/addProductHandler.php",
+                    "/models/backend/functions/addProductHandler.php",
                     {
                         method: "POST",
                         body: formData,
@@ -486,7 +486,7 @@ $(document).ready(function () {
             // 顯示主圖片預覽
             if (product.mainImage) {
                 $("#mainImagePreview")
-                    .attr("src", `/new_test/${product.mainImage}`)
+                    .attr("src", `${product.mainImage}`)
                     .show();
                 $("#uploadMainImage").hide();
             } else {
@@ -669,7 +669,7 @@ $(document).ready(function () {
         const search = $("#searchProduct").val();
         try {
             const res = await fetch(
-                `/new_test/api/product.php?action=filter&type=${encodeURIComponent(
+                `/api/product.php?action=filter&type=${encodeURIComponent(
                     type
                 )}&status=${encodeURIComponent(
                     status
@@ -778,7 +778,7 @@ async function deleteProduct(productId) {
 
         // 發送請求到後端處理文件
         const res = await fetch(
-            "/new_test/models/backend/functions/deleteProductHandler.php",
+            "/models/backend/functions/deleteProductHandler.php",
             {
                 method: "POST",
                 body: formData,
@@ -805,7 +805,7 @@ async function updateProduct(formData) {
 
         // 發送請求到後端處理文件
         const res = await fetch(
-            "/new_test/models/backend/functions/updateProductHandler.php",
+            "/models/backend/functions/updateProductHandler.php",
             {
                 method: "POST",
                 body: formData,
