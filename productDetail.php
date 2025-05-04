@@ -35,14 +35,14 @@ $product_id = isset($_GET['product_id']) ? (int) $_GET['product_id'] : 1;
             const resp = await fetch(`api/product.php?action=getProductById&product_id=${productId}`);
             const json = await resp.json();
             if (!json.success || !json.data) {
-                throw new Error(json.message || '資料格式錯誤');
+                window.location.href = '404.php';
+                return;
             }
             productData = json.data;
             renderProduct(productData);
         } catch (err) {
             console.error(err);
-            document.getElementById('product-container').innerHTML =
-                '<div class="alert alert-danger">載入商品時發生錯誤</div>';
+            window.location.href = '404.php';
         }
     }
 
