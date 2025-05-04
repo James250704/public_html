@@ -147,10 +147,29 @@ $(document).ready(function () {
                 $blk.find(".color-stock-container .color-row").each(
                     function () {
                         const $row = $(this);
-                        sizeData.colors.push({
-                            Color: $row.find(".color-input").val(),
-                            Stock: $row.find(".stock-input").val(),
-                        });
+                        const colorVal = $row.find(".color-input").val();
+                        if (colorVal && colorVal.trim()) {
+                            // 分割顏色描述，確保多個顏色分開顯示
+                            const colors = colorVal
+                                .split(",")
+                                .map((c) => c.trim())
+                                .filter((c) => c); // 過濾掉空值
+                            colors.forEach((c) => {
+                                sizeData.colors.push({
+                                    Color: c,
+                                    Stock: $row.find(".stock-input").val() || 0, // 預設庫存為0
+                                });
+                            });
+                            // 在編輯模式下，將顏色值設置回輸入框
+                            if (isEditMode) {
+                                $row.find(".color-input").val(
+                                    colorVal
+                                        .split(",")
+                                        .map((c) => c.trim())
+                                        .join(", ")
+                                );
+                            }
+                        }
                     }
                 );
                 sizes.push(sizeData);
@@ -212,6 +231,7 @@ $(document).ready(function () {
                 );
             }
         } catch (err) {
+            const isEditMode = $(this).data("edit-mode");
             console.error(isEditMode ? "更新商品錯誤:" : "新增商品錯誤:", err);
 
             // 顯示錯誤訊息
@@ -297,11 +317,32 @@ $(document).ready(function () {
                     .attr("src", ev.target.result)
                     .addClass("img-thumbnail")
                     .css({ width: "100px", height: "100px", margin: "4px" })
-                    .attr("draggable", true);
+                    .attr("draggable", true)
+                    .data("index", i);
                 $preview.append($img);
             };
             reader.readAsDataURL(files[i]);
         }
+        // 初始化拖曳排序
+        $preview.sortable({
+            items: "img",
+            stop: function (event, ui) {
+                // 更新圖片順序
+                const newOrder = [];
+                $preview.find("img").each(function (index) {
+                    newOrder.push($(this).data("index"));
+                });
+                // 重新排序files數組
+                const sortedFiles = [];
+                newOrder.forEach((index) => {
+                    sortedFiles.push(files[index]);
+                });
+                // 更新files數組
+                const dataTransfer = new DataTransfer();
+                sortedFiles.forEach((file) => dataTransfer.items.add(file));
+                e.target.files = dataTransfer.files;
+            },
+        });
     });
 
     // 動態新增／刪除尺寸區塊
@@ -525,16 +566,20 @@ $(document).ready(function () {
                         sizeOption.colors.length
                     ) {
                         sizeOption.colors.forEach((colorOption, idx) => {
-                            const label = colorLabels[idx] || "";
-                            const stock = colorOption.Stock || "";
                             const $colorRow = $(`
                                 <div class="mb-2 color-row">
                                   <div class="row g-2">
                                     <div class="col-md-6">
-                                      <input type="text" class="form-control color-input" placeholder="顏色描述" value="${label}">
+                                      <input type="text" class="form-control color-input" placeholder="顏色描述" value="${
+                                          colorOption.Color ||
+                                          sizeOption.Colors ||
+                                          ""
+                                      }">
                                     </div>
                                     <div class="col-md-4">
-                                      <input type="number" class="form-control stock-input" placeholder="庫存" value="${stock}">
+                                      <input type="number" class="form-control stock-input" placeholder="庫存" value="${
+                                          colorOption.Stock || ""
+                                      }">
                                     </div>
                                     <div class="col-md-2">
                                       <button type="button" class="btn btn-sm w-100 btn-outline-danger remove-color-btn">

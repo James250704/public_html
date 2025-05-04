@@ -120,17 +120,17 @@ function insertProductOptions(PDO $db, int $pid, array $sizes): void
             throw new Exception('尺寸資料錯誤');
         }
         foreach ($s['colors'] as $c) {
-            if (!isset($c['color'], $c['stock'])) {
+            if (!isset($c['Color'], $c['Stock'])) {
                 throw new Exception('顏色資料不完整');
             }
             $stmt->execute([
                 ':oid' => $optId,
                 ':pid' => $pid,
-                ':col' => $c['color'],
+                ':col' => $c['Color'],
                 ':sz' => $s['size'],
                 ':desc' => $s['sizeDescription'],
                 ':pr' => $s['price'],
-                ':st' => $c['stock']
+                ':st' => $c['Stock']
             ]);
             $optId++;
         }
