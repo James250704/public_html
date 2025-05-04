@@ -249,7 +249,7 @@ function getAllProducts($page = 1, $limit = 10, $type = '', $status = '', $searc
     try {
         $params = [];
         $sql = "SELECT p.ProductID, p.Type, p.ProductName, p.Introdution, p.isActive, 
-                COUNT(o.OptionID) as OptionCount 
+                SUM(o.Stock) as TotalStock 
                 FROM Product p 
                 LEFT JOIN Options o ON p.ProductID = o.ProductID ";
 

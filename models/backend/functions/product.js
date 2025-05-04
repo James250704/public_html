@@ -1,4 +1,105 @@
 $(document).ready(function () {
+    // 刪除商品事件處理
+    $(document).on("click", ".delete-product", async function () {
+        const productId = $(this).data("id");
+        if (!productId) return;
+
+        // 使用 Bootstrap 的 modal 來確認刪除
+        const confirmModal = new bootstrap.Modal(
+            $(
+                "<div class='modal fade' tabindex='-1'>" +
+                    "<div class='modal-dialog modal-dialog-centered'>" +
+                    "<div class='modal-content'>" +
+                    "<div class='modal-header bg-danger text-white'>" +
+                    "<h5 class='modal-title'>確認刪除</h5>" +
+                    "<button type='button' class='btn-close btn-close-white' data-bs-dismiss='modal' aria-label='Close'></button>" +
+                    "</div>" +
+                    "<div class='modal-body'>" +
+                    "<p>確定要刪除此商品嗎？此操作無法撤銷。</p>" +
+                    "</div>" +
+                    "<div class='modal-footer'>" +
+                    "<button type='button' class='btn btn-secondary' data-bs-dismiss='modal'>取消</button>" +
+                    "<button type='button' class='btn btn-danger' id='confirmDelete'>刪除</button>" +
+                    "</div>" +
+                    "</div>" +
+                    "</div>" +
+                    "</div>"
+            ).appendTo("body")[0]
+        );
+
+        confirmModal.show();
+
+        $("#confirmDelete").on("click", async function () {
+            try {
+                const res = await fetch(
+                    `/new_test/api/product.php?action=delete&id=${productId}`
+                );
+                const result = await res.json();
+
+                if (result.success) {
+                    // 顯示成功訊息
+                    const toastHtml = `
+                        <div class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                          <div class="d-flex">
+                            <div class="toast-body"><i class="bi bi-check-circle me-2"></i>商品已成功刪除！</div>
+                            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                          </div>
+                        </div>`;
+                    const $container = $(
+                        '<div class="position-fixed bottom-0 end-0 p-3">'
+                    )
+                        .append(toastHtml)
+                        .appendTo("body");
+                    const toast = new bootstrap.Toast(
+                        $container.find(".toast")[0],
+                        { delay: 3000 }
+                    );
+                    toast.show();
+                    toast._element.addEventListener("hidden.bs.toast", () =>
+                        $container.remove()
+                    );
+
+                    // 刷新商品列表
+                    filterProducts();
+                } else {
+                    throw new Error(result.message);
+                }
+            } catch (err) {
+                console.error("刪除商品錯誤:", err);
+
+                // 顯示錯誤訊息
+                const toastHtml = `
+                    <div class="toast align-items-center text-white bg-danger border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                      <div class="d-flex">
+                        <div class="toast-body"><i class="bi bi-exclamation-triangle me-2"></i>刪除失敗：${
+                            err.message || "未知錯誤"
+                        }</div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                      </div>
+                    </div>`;
+                const $container = $(
+                    '<div class="position-fixed bottom-0 end-0 p-3">'
+                )
+                    .append(toastHtml)
+                    .appendTo("body");
+                const toast = new bootstrap.Toast(
+                    $container.find(".toast")[0],
+                    { delay: 5000 }
+                );
+                toast.show();
+                toast._element.addEventListener("hidden.bs.toast", () =>
+                    $container.remove()
+                );
+            } finally {
+                confirmModal.hide();
+                // 移除 modal 元素
+                setTimeout(() => {
+                    $(".modal").last().remove();
+                }, 300);
+            }
+        });
+    });
+
     // 新增商品
     $("#addProduct").on("click", async function () {
         try {
@@ -122,7 +223,7 @@ $(document).ready(function () {
                   </div>
                   <div class="col-md-3 text-end">
                     <button type="button" class="btn btn-outline-danger remove-size-btn">
-                      <i class="bi bi-trash"></i>
+                      <i class="bi bi-trash"></i> 刪除
                     </button>
                   </div>
                 </div>
@@ -131,17 +232,19 @@ $(document).ready(function () {
                     <i class="bi bi-plus"></i> 添加顏色
                   </button>
                   <div class="color-stock-container mt-2">
-                    <div class="color-row row g-2 mb-2">
-                      <div class="col-md-6">
-                        <input type="text" class="form-control" placeholder="顏色描述">
-                      </div>
-                      <div class="col-md-4">
-                        <input type="number" class="form-control" placeholder="庫存">
-                      </div>
-                      <div class="col-md-2">
-                        <button type="button" class="btn btn-sm btn-outline-danger remove-color-btn" disabled>
-                          <i class="bi bi-trash"></i>
-                        </button>
+                    <div class="mb-2 color-row">
+                      <div class="row g-2">
+                        <div class="col-md-6">
+                            <input type="text" class="form-control" placeholder="顏色描述">
+                        </div>
+                        <div class="col-md-4">
+                            <input type="number" class="form-control" placeholder="庫存">
+                        </div>
+                        <div class="col-md-2">
+                            <button type="button" class="btn btn-sm w-100 btn-outline-danger remove-color-btn" disabled>
+                            <i class="bi bi-trash"></i> 刪除
+                            </button>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -159,36 +262,46 @@ $(document).ready(function () {
         }
     });
 
-    // 事件代理：新增顏色
+    // 新增顏色
     $(document).on("click", ".add-color-btn", function () {
         const $container = $(this).siblings(".color-stock-container");
         const $row = $(`
-            <div class="color-row row g-2 mb-2">
-              <div class="col-md-6"><input type="text" class="form-control" placeholder="顏色描述"></div>
-              <div class="col-md-4"><input type="number" class="form-control" placeholder="庫存"></div>
-              <div class="col-md-2">
-                <button type="button" class="btn btn-sm btn-outline-danger remove-color-btn">
-                  <i class="bi bi-trash"></i>
-                </button>
-              </div>
-            </div>
-        `);
+      <div class="mb-2 color-row">
+        <div class="row g-2">
+          <div class="col-md-6">
+            <input type="text" class="form-control" placeholder="顏色描述">
+          </div>
+          <div class="col-md-4">
+            <input type="number" class="form-control" placeholder="庫存">
+          </div>
+          <div class="col-md-2">
+            <button type="button" class="btn btn-sm w-100 btn-outline-danger remove-color-btn">
+              <i class="bi bi-trash"></i> 刪除
+            </button>
+          </div>
+        </div>
+      </div>
+    `);
         $container.append($row);
-        // 只有超過一行時才啟用刪除
-        if ($container.find(".color-row").length > 1) {
-            $container.find(".remove-color-btn").prop("disabled", false);
-        }
+
+        // 加完以後，看看到底有幾行，若超過 1 行就啟用所有刪除按鈕
+        const count = $container.children(".color-row").length;
+        $container.find(".remove-color-btn").prop("disabled", count <= 1);
     });
 
-    // 事件代理：刪除顏色
+    // 刪除顏色
     $(document).on("click", ".remove-color-btn", function () {
         const $container = $(this).closest(".color-stock-container");
-        if ($container.find(".color-row").length > 1) {
-            $(this).closest(".color-row").remove();
+        const $thisRow = $(this).closest(".color-row");
+
+        // 只有超過 1 行時才允許刪除
+        if ($container.children(".color-row").length > 1) {
+            $thisRow.remove();
         }
-        if ($container.find(".color-row").length === 1) {
-            $container.find(".remove-color-btn").prop("disabled", true);
-        }
+
+        // 刪除後重新計算剩餘行數，若只剩 1 行就 disable 所有刪除按鈕
+        const remaining = $container.children(".color-row").length;
+        $container.find(".remove-color-btn").prop("disabled", remaining <= 1);
     });
 
     // 上架狀態顯示文字
@@ -226,7 +339,7 @@ $(document).ready(function () {
                       <td>${p.ProductID}</td>
                       <td>${p.ProductName}</td>
                       <td>${p.Type}</td>
-                      <td>${p.OptionCount}</td>
+                      <td>${p.TotalStock}</td>
                       <td>${
                           p.isActive == 1
                               ? '<span class="badge bg-success">上架</span>'
@@ -242,7 +355,7 @@ $(document).ready(function () {
                           }"><i class="bi bi-list-ul"></i></button>
                           <button class="btn btn-sm btn-outline-danger delete-product" data-id="${
                               p.ProductID
-                          }"><i class="bi bi-trash"></i></button>
+                          }" title="刪除商品"><i class="bi bi-trash"></i> 刪除</button>
                         </div>
                       </td>
                     </tr>

@@ -1,153 +1,143 @@
 <?php
 require_once __DIR__ . '/../../../api/db.php';
-require_once __DIR__ . '/../../../api/product.php';
 
 function handleAddProduct()
 {
+    $db = getDBConnection();
     try {
-        $db = getDBConnection();
+        $db->beginTransaction();
 
-        // 驗證必填欄位
-        $requiredFields = ['productName', 'productType', 'productIntro'];
-        foreach ($requiredFields as $field) {
-            if (empty($_POST[$field])) {
+        // 驗證必填
+        foreach (['productName', 'productType', 'productIntro'] as $f) {
+            if (empty($_POST[$f])) {
                 throw new Exception('請填寫所有必填欄位');
             }
         }
 
-        // 準備商品基本資料
-        $productData = [
-            'ProductName' => $_POST['productName'],
+        // 插入 Product
+        $productId = insertProduct($db, [
             'Type' => $_POST['productType'],
+            'ProductName' => $_POST['productName'],
             'Introdution' => $_POST['productIntro'],
             'isActive' => isset($_POST['productActive']) ? 1 : 0
-        ];
+        ]);
 
-        // 插入商品資料
-        $productId = insertProduct($db, $productData);
+        // 建資料夾
+        $dir = __DIR__ . '/../../../imgs/products/' . $productId . '/';
+        if (!is_dir($dir))
+            mkdir($dir, 0777, true);
 
-        // 處理主圖片上傳
+        // 上傳主圖
         if (!empty($_FILES['mainImage']['name'])) {
-            $mainImagePath = uploadImage($_FILES['mainImage']);
-            // 不儲存到資料庫，直接移動到產品目錄
-            $productData['MainImage'] = 'imgs/products/' . $productId . '/main.jpg';
-
-            // 移動主圖片到產品目錄
-            $targetDir = __DIR__ . '/../../../imgs/products/' . $productId . '/';
-            if (!file_exists($targetDir)) {
-                mkdir($targetDir, 0777, true);
-            }
-            rename(__DIR__ . '/../../../' . $mainImagePath, $targetDir . 'main.jpg');
+            $src = uploadImage($_FILES['mainImage']);
+            rename(__DIR__ . '/../../../' . $src, $dir . 'main.jpg');
         }
 
-        // 插入商品資料
-        $productId = insertProduct($db, $productData);
-
-        // 處理詳細圖片
+        // 上傳 gallery
         if (!empty($_FILES['galleryImages']['name'][0])) {
-            foreach ($_FILES['galleryImages']['tmp_name'] as $index => $tmpName) {
-                if ($_FILES['galleryImages']['error'][$index] === UPLOAD_ERR_OK) {
-                    $galleryImagePath = uploadImage([
-                        'name' => $_FILES['galleryImages']['name'][$index],
-                        'type' => $_FILES['galleryImages']['type'][$index],
-                        'tmp_name' => $tmpName,
-                        'error' => $_FILES['galleryImages']['error'][$index],
-                        'size' => $_FILES['galleryImages']['size'][$index]
-                    ]);
-
-                    insertProductImage($db, $productId, $galleryImagePath, $index + 1);
+            foreach ($_FILES['galleryImages']['tmp_name'] as $i => $tmp) {
+                if ($_FILES['galleryImages']['error'][$i] === UPLOAD_ERR_OK) {
+                    $file = [
+                        'name' => $_FILES['galleryImages']['name'][$i],
+                        'tmp_name' => $tmp,
+                        'error' => UPLOAD_ERR_OK,
+                    ];
+                    $src = uploadImage($file);
+                    rename(__DIR__ . '/../../../' . $src, $dir . 'gallery-' . ($i + 1) . '.jpg');
                 }
             }
         }
 
-        // 處理尺寸與價格選項
-        if (!empty($_POST['sizes']) && is_array($_POST['sizes'])) {
-            foreach ($_POST['sizes'] as $sizeData) {
-                if (is_array($sizeData) && !empty($sizeData['colors']) && is_array($sizeData['colors'])) {
-                    $optionId = insertProductOption($db, $productId, $sizeData);
-
-                    // 顏色和庫存已在 insertProductOption 中處理
-                }
+        // 插入 Options
+        if (!empty($_POST['sizes'])) {
+            $sizes = json_decode($_POST['sizes'], true); // 將 JSON 字符串解析為關聯數組
+            if (is_array($sizes)) {
+                insertProductOptions($db, $productId, $sizes);
+            } else {
+                throw new Exception('尺寸資料格式錯誤');
             }
         }
 
-        return ['success' => true, 'message' => '商品新增成功', 'productId' => $productId];
+        $db->commit();
+        return ['success' => true, 'message' => '新增成功', 'productId' => $productId];
+
     } catch (Exception $e) {
+        if ($db->inTransaction())
+            $db->rollBack();
         return ['success' => false, 'message' => $e->getMessage()];
     }
 }
 
-function uploadImage($file)
+function uploadImage(array $file): string
 {
-    $uploadDir = __DIR__ . '/../../../imgs/products/';
-    $fileName = uniqid() . '_' . basename($file['name']);
-    $targetPath = $uploadDir . $fileName;
-
-    if (!move_uploaded_file($file['tmp_name'], $targetPath)) {
+    $base = __DIR__ . '/../../../imgs/products/';
+    if (!is_dir($base))
+        mkdir($base, 0777, true);
+    $fn = uniqid() . '_' . basename($file['name']);
+    $to = $base . $fn;
+    if (!move_uploaded_file($file['tmp_name'], $to)) {
         throw new Exception('圖片上傳失敗');
     }
-
-    return 'imgs/products/' . $fileName;
+    return 'imgs/products/' . $fn;
 }
 
-function insertProduct($db, $data)
+function insertProduct(PDO $db, array $d): int
 {
-    // 獲取當前最大ProductID
-    $maxIdStmt = $db->query("SELECT MAX(ProductID) as maxId FROM Product");
-    $maxId = $maxIdStmt->fetch(PDO::FETCH_ASSOC)['maxId'];
-    $newId = $maxId ? $maxId + 1 : 1;
+    $row = $db->query("SELECT MAX(ProductID) AS m FROM Product")
+        ->fetch(PDO::FETCH_ASSOC);
+    $newId = ((int) $row['m']) + 1;
 
-    $stmt = $db->prepare("INSERT INTO Product (ProductID, ProductName, Type, Introdution, isActive) VALUES (?, ?, ?, ?, ?)");
+    $sql = "INSERT INTO Product
+            (ProductID,Type,ProductName,Introdution,isActive)
+            VALUES(:id,:type,:nm,:intro,:act)";
+    $stmt = $db->prepare($sql);
     $stmt->execute([
-        $newId,
-        $data['ProductName'],
-        $data['Type'],
-        $data['Introdution'],
-        $data['isActive']
+        ':id' => $newId,
+        ':type' => $d['Type'],
+        ':nm' => $d['ProductName'],
+        ':intro' => $d['Introdution'],
+        ':act' => $d['isActive']
     ]);
-
     return $newId;
 }
 
-function insertProductImage($db, $productId, $imagePath, $order)
+function insertProductOptions(PDO $db, int $pid, array $sizes): void
 {
-    // 直接儲存圖片到指定目錄，不存入資料庫
-    $targetDir = __DIR__ . '/../../../imgs/products/' . $productId . '/';
-    if (!file_exists($targetDir)) {
-        mkdir($targetDir, 0777, true);
+    $row = $db->query("SELECT MAX(OptionID) AS m FROM Options")
+        ->fetch(PDO::FETCH_ASSOC);
+    $optId = ((int) $row['m']) + 1;
+
+    $sql = "INSERT INTO Options
+            (OptionID,ProductID,Color,Size,SizeDescription,Price,Stock)
+            VALUES(:oid,:pid,:col,:sz,:desc,:pr,:st)";
+    $stmt = $db->prepare($sql);
+
+    foreach ($sizes as $s) {
+        if (
+            !isset($s['size'], $s['sizeDescription'], $s['price'], $s['colors'])
+            || !is_array($s['colors'])
+        ) {
+            throw new Exception('尺寸資料錯誤');
+        }
+        foreach ($s['colors'] as $c) {
+            if (!isset($c['color'], $c['stock'])) {
+                throw new Exception('顏色資料不完整');
+            }
+            $stmt->execute([
+                ':oid' => $optId,
+                ':pid' => $pid,
+                ':col' => $c['color'],
+                ':sz' => $s['size'],
+                ':desc' => $s['sizeDescription'],
+                ':pr' => $s['price'],
+                ':st' => $c['stock']
+            ]);
+            $optId++;
+        }
     }
-
-    // 主圖片命名為main.jpg，詳細圖片命名為gallery-{number}.jpg
-    $targetFile = $order === 1
-        ? $targetDir . 'main.jpg'
-        : $targetDir . 'gallery-' . ($order - 1) . '.jpg';
-
-    rename(__DIR__ . '/../../../' . $imagePath, $targetFile);
 }
 
-function insertProductOption($db, $productId, $sizeData)
-{
-    $stmt = $db->prepare("INSERT INTO Options (ProductID, Size, SizeDescription, Price, Color, Stock) VALUES (?, ?, ?, ?, ?, ?)");
-
-    // 處理每個顏色選項
-    foreach ($sizeData['colors'] as $colorData) {
-        $stmt->execute([
-            $productId,
-            $sizeData['size'],
-            $sizeData['sizeDescription'],
-            $sizeData['price'],
-            $colorData['color'],
-            $colorData['stock']
-        ]);
-    }
-
-    return $db->lastInsertId();
-}
-
-// 已將顏色和庫存直接整合到insertProductOption中，此函數可刪除
-
-// 處理AJAX請求
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'addProduct') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'addProduct') {
     header('Content-Type: application/json');
     echo json_encode(handleAddProduct());
     exit;

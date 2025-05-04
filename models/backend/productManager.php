@@ -95,7 +95,7 @@ try {
                                     <td><?= htmlspecialchars($p['ProductID']) ?></td>
                                     <td><?= htmlspecialchars($p['ProductName']) ?></td>
                                     <td><?= htmlspecialchars($p['Type']) ?></td>
-                                    <td><?= htmlspecialchars($p['OptionCount']) ?></td>
+                                    <td><?= htmlspecialchars($p['TotalStock']) ?></td>
                                     <td>
                                         <?php if ($p['isActive']): ?>
                                             <span class="badge bg-success">上架</span>
@@ -110,7 +110,9 @@ try {
                                             <button class="btn btn-sm btn-outline-info view-options"
                                                 data-id="<?= $p['ProductID'] ?>"><i class="bi bi-list-ul"></i></button>
                                             <button class="btn btn-sm btn-outline-danger delete-product"
-                                                data-id="<?= $p['ProductID'] ?>"><i class="bi bi-trash"></i></button>
+                                                data-id="<?= $p['ProductID'] ?>" title="刪除商品">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
                                         </div>
                                     </td>
                                 </tr>
@@ -235,7 +237,7 @@ try {
                                                         <i class="bi bi-plus"></i> 添加顏色
                                                     </button>
                                                     <div class="color-stock-container mt-3">
-                                                        <div class="mb-2">
+                                                        <div class="mb-2 color-row">
                                                             <div class="row g-2">
                                                                 <div class="col-md-6">
                                                                     <input type="text" class="form-control"
@@ -249,7 +251,7 @@ try {
                                                                     <button type="button"
                                                                         class="btn btn-sm btn-outline-danger w-100 remove-color-btn"
                                                                         disabled>
-                                                                        <i class="bi bi-trash"></i>
+                                                                        <i class="bi bi-trash"></i> 刪除
                                                                     </button>
                                                                 </div>
                                                             </div>
@@ -276,4 +278,4 @@ try {
     </div>
 </div>
 
-<script src="models/backend/functions/prodcut.js"></script>
+<script src="models/backend/functions/product.js"></script>
