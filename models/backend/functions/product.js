@@ -778,7 +778,7 @@ async function deleteProduct(productId) {
 
         // 發送請求到後端處理文件
         const res = await fetch(
-            "/models/backend/functions/deleteProductHandler.php",
+            "models/backend/functions/deleteProductHandler.php",
             {
                 method: "POST",
                 body: formData,
@@ -805,7 +805,7 @@ async function updateProduct(formData) {
 
         // 發送請求到後端處理文件
         const res = await fetch(
-            "/models/backend/functions/updateProductHandler.php",
+            "models/backend/functions/updateProductHandler.php",
             {
                 method: "POST",
                 body: formData,
